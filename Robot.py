@@ -85,5 +85,6 @@ class Robot:
 
 
 robot = Robot.eeg_side_quickstart()
-print(robot.wait_for_events())
+while True:
+    print(robot.wait_for_events())
 
