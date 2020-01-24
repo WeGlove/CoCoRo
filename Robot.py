@@ -47,21 +47,12 @@ class Robot:
                 events.append(eve.parse(shown()))
         return events
 
-    def answer_events(self, lastActed, success=True, Shown=-1):
-        """
-        This method sends answeres coressponding to certain events, AFTER the robot has finished exexuting said event
-        :param lastActed: What Event has been last acted upon? This decides what response will be sent
-        :param success: Did a move command succeed? - only needed for the response of a movement command
-        :param Shown: What image was shown? - only needed for the response of a show command
-        :return: None
-        """
-        if lastActed == "moveArm" or lastActed == "moveCategory" or lastActed == "moveImg" or lastActed == "reset":
-            print("moving")
-            self.client.publish(".*", "moved", moved(success))
-        elif lastActed == "show":
-            self.client.publish(".*", "shown", shown(Shown))
-        else:
-           raise("Invalid Event")
+    def answer_movement(self, success=True):
+        self.client.publish(".*", "moved", moved(success))
+
+    def answer_show(self, shownImg=-1):
+        self.client.publish(".*", "shown", shown(shownImg))
+
 
     def publish(self, command_text, command_attribute):
         self.client.publish(".*", command_text, command_attribute)
