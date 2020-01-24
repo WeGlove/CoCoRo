@@ -83,7 +83,3 @@ class Robot:
         robot.connect()
         return robot
 
-
-robot = Robot.eeg_side_quickstart()
-print(robot.wait_for_events())
-
