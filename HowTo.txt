@@ -1,0 +1,17 @@
+Installation:
+install thrift: pip install thrift
+move imports to front of file to avoid python 2/3 conflicts.
+
+
+Compile:
+	- copy "tecs" folder into project folder
+	- write trhift meesages
+	- compile messages with thrift compiler : thrift -gen py file_name.thrift
+	- copy generated folder into project folder
+	- add tecs into script: import tecs
+	- add generated messages into script: from namespace.ttypes import *
+	- define TECSserver address: "tecs://ip_address:9000/ps"
+
+Run:
+	- run tecs server
+	- run clients
