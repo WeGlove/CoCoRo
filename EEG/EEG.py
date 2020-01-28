@@ -28,18 +28,17 @@ class EEG:
                 print(f"{byte:03}", end=' ')
             self.__write_to_file(buffer)
             print()
-            # break
+            break
 
-        # read_buffer = self.__read_from_file()
-        # for byte in read_buffer:
-        #     print(f"{byte:03}", end=' ')
-        # print()
+        read_buffer = self.__read_from_file()
+        for byte in read_buffer:
+            print(f"{byte:03}", end=' ')
+        print()
 
     def __write_to_file(self, data):
         # maybe change type to appending instead of overwriting.
         with open(self.filename, 'wb') as f:
-            for byte in data:
-                f.write(byte)
+            f.write(data)
 
     def __read_from_file(self):
         with open(self.filename, 'rb') as f:
