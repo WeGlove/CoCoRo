@@ -5,7 +5,7 @@ class EEG:
 
     def __init__(self, filename):
         self.frame_length = 1  # for debugging purpose just one sample
-        self.bytes_per_channel = 3
+        self.bytes_per_channel = 4  # actual 3 bytes per channel but one for puffer.
         self.filename = filename
 
         devices = UnicornPy.GetAvailableDevices(True)
