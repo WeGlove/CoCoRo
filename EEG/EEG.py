@@ -1,49 +1,87 @@
-import UnicornPy
+# import UnicornPy
+import threading
+import time
+import numpy as np
 
 
 class EEG:
 
     def __init__(self, filename):
-        self.frame_length = 1  # for debugging purpose just one sample
-        self.bytes_per_channel = 4  # actual 3 bytes per channel but one for puffer.
-        self.filename = filename
+        self.__filename = filename
 
-        devices = UnicornPy.GetAvailableDevices(True)
-        print(devices)
-        if len(devices) == 0:
-            raise Exception("Couldn't find a device.")
-        self.device = UnicornPy.Unicorn(devices[0])  # assuming only on device is in range.
+        self.__frame_length = 1  # for debugging purpose just one sample
+        self.__bytes_per_channel = 4  # actual 3 bytes per channel but one for buffer.
+        self.__features = 8  # number of channel / features / column of data matrix
+        
+        self.__recording = False
+        self.__record_thread = threading.Thread(target = self.__record)
 
-    def record(self):
-        # start the acquisition of the EEG headset
-        self.device.StartAcquisition(False)
-        number_of_channels = self.device.GetNumberOfAcquiredChannels()
-        print(number_of_channels)
-        buffer_length = self.frame_length * number_of_channels * self.bytes_per_channel
-        buffer = bytearray(buffer_length)
+        # data matrix containing features as column vectors.
+        self.__data = np.zeros((self.__features, 0))
+        # event list containing (`index`, `event`) tuples.
+        self.__events = []
 
-        while True:
-            self.device.GetData(self.frame_length, buffer, buffer_length)
-            for byte in buffer:
-                print(f"{byte:03}", end=' ')
-            self.__write_to_file(buffer)
-            print()
-            break
+        # self.device = self.__get_eeg_device()
 
-        read_buffer = self.__read_from_file()
-        for byte in read_buffer:
-            print(f"{byte:03}", end=' ')
-        print()
+    def toggle_recording(self):
+        if not self.__recording:
+            self.__record_thread.start()
+        else:
+            self.__record_thread.do_run = False
+            self.__record_thread.join()
+            # TODO: write data matrix to file.
+        self.__recording = not self.__recording
+        
+    def set_event(self, index, event):
+        self.__events.append((index, event))
+
+    def print_d(self):
+        print(self.__data)
+
+    def print_e(self):
+        print(self.__events)
+
+    def __record(self):
+        t = threading.currentThread()
+        # as long as `do_run` flag has not been set from main thread continue
+        while getattr(t, "do_run", True):
+            # acquire eeg data.
+            # TODO: get actual eeg data and convert the 24 bit data to proper floats
+            # TODO: maybe filter values online?!
+            # new_data = self.__get_eeg_data()
+            new_data = np.random.rand(self.__features, 1)
+            # append the new data vector to the right of the data matrix.
+            self.__data = np.c_[ self.__data, new_data ]
+            self.print_d()
+            time.sleep(1)
+        print("stopping")
+
+    # def __get_eeg_device(self):
+    #     devices = UnicornPy.GetAvailableDevices(True)
+    #     print(devices)
+    #     if len(devices) == 0:
+    #         raise Exception("Couldn't find a device.")
+    #     return UnicornPy.Unicorn(devices[0])  # assuming only on device is in range.
+    
+    # def __get_eeg_data(self):
+    #     pass
 
     def __write_to_file(self, data):
         # maybe change type to appending instead of overwriting.
-        with open(self.filename, 'wb') as f:
+        with open(self.__filename, 'wb') as f:
             f.write(data)
 
     def __read_from_file(self):
-        with open(self.filename, 'rb') as f:
+        with open(self.__filename, 'rb') as f:
             data = f.read()
         return data
 
+
+
 eeg = EEG('test.bin')
-eeg.record()
+eeg.toggle_recording()
+eeg.set_event(2, 2)
+time.sleep(5)
+eeg.set_event(4, 1)
+eeg.toggle_recording()
+eeg.print_e()
