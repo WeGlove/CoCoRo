@@ -73,6 +73,9 @@ class Client:
     def run(self):
         pass
 
+robot = Robot.Robot.eeg_side_quickstart("tecs://172.31.1.132:9000/ps")
+while True:
+    print(robot.wait_for_events())
 
-c = Client()
-c.train()
+#c = Client()
+#c.train()
