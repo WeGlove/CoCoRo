@@ -53,9 +53,8 @@ class Robot:
     def answer_show(self, shownImg=-1):
         self.client.publish(".*", "shown", shown(shownImg))
 
-
     def publish(self, command_text, command_attribute):
-        self.client.publish(".*", command_text, command_attribute)
+        print(self.client.publish(".*", command_text, command_attribute))
 
     @staticmethod
     def ps_tcp_example(uri="tecs://localhost:9000/ps"):

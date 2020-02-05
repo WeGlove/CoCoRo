@@ -15,3 +15,7 @@ Compile:
 Run:
 	- run tecs server
 	- run clients
+
+
+Windows Firewall problems:
+    - To run the TECS server please turn of windows firewalls completely
