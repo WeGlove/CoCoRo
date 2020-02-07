@@ -1,7 +1,8 @@
-# import UnicornPy
+import UnicornPy
 import threading
 import time
 import numpy as np
+import struct
 
 
 class EEG:
@@ -14,14 +15,14 @@ class EEG:
         self.__features = 8  # number of channel / features / column of data matrix
         
         self.__recording = False
-        self.__record_thread = threading.Thread(target = self.__record)
+        self.__record_thread = threading.Thread(target=self.__record)
 
         # data matrix containing features as column vectors.
         self.__data = np.zeros((self.__features, 0))
         # event list containing (`index`, `event`) tuples.
         self.__events = []
 
-        # self.device = self.__get_eeg_device()
+        self.device = self.__get_eeg_device()
 
     def toggle_recording(self):
         if not self.__recording:
@@ -44,27 +45,39 @@ class EEG:
     def __record(self):
         t = threading.currentThread()
         # as long as `do_run` flag has not been set from main thread continue
+        self.device.StartAcquisition(True)
+        print(self.device.GetNumberOfAcquiredChannels())
+        self.__channel_number = self.device.GetNumberOfAcquiredChannels()
+
         while getattr(t, "do_run", True):
             # acquire eeg data.
             # TODO: get actual eeg data and convert the 24 bit data to proper floats
             # TODO: maybe filter values online?!
-            # new_data = self.__get_eeg_data()
-            new_data = np.random.rand(self.__features, 1)
+            new_data = self.__get_eeg_data()
+            #new_data = np.random.rand(self.__features, 1)
             # append the new data vector to the right of the data matrix.
             self.__data = np.c_[ self.__data, new_data ]
             self.print_d()
             time.sleep(1)
         print("stopping")
 
-    # def __get_eeg_device(self):
-    #     devices = UnicornPy.GetAvailableDevices(True)
-    #     print(devices)
-    #     if len(devices) == 0:
-    #         raise Exception("Couldn't find a device.")
-    #     return UnicornPy.Unicorn(devices[0])  # assuming only on device is in range.
-    
-    # def __get_eeg_data(self):
-    #     pass
+    def __get_eeg_device(self):
+        devices = UnicornPy.GetAvailableDevices(True)
+        print(devices)
+        if len(devices) == 0:
+            raise Exception("Couldn't find a device.")
+        return UnicornPy.Unicorn(devices[0])  # assuming only on device is in range.
+
+    def __get_eeg_data(self):
+        buffer_length = self.__frame_length * self.__channel_number * self.__bytes_per_channel
+        buffer = bytearray(buffer_length)
+        self.device.GetData(self.__frame_length, buffer, buffer_length)
+        i = 0
+        d = []
+        while i < self.__features * 3: # 3 being the precision
+            d.append(struct.unpack('f', b'\x00' + buffer[i:i + 3]))
+            i += 3
+        return np.array(d)
 
     def __write_to_file(self, data):
         # maybe change type to appending instead of overwriting.
@@ -80,8 +93,8 @@ class EEG:
 
 eeg = EEG('test.bin')
 eeg.toggle_recording()
-eeg.set_event(2, 2)
+#eeg.set_event(2, 2)
 time.sleep(5)
-eeg.set_event(4, 1)
+#eeg.set_event(4, 1)
 eeg.toggle_recording()
-eeg.print_e()
+#eeg.print_e()
