@@ -1,5 +1,6 @@
 import statistics
 from scipy import signal, fftpack
+import numpy
 
 class Filtering:
 
@@ -48,15 +49,20 @@ class Filtering:
         notch_mean = [sum(row[51 - 2:51 + 2]) / len(row[51 - 2:51 + 2]) +
                       sum(row[61 - 2:61 + 2]) / len(row[61 - 2:61 + 2])
                       for row in notch_freqs]
-        notch_mean /= 2
+        notch_mean = [val/2 for val in notch_mean]
 
         # Apply Band Pass
-        band_num, band_dem = signal.butter(2,[0.1,30], output='ba')
+        band_num, band_dem = signal.butter(2,[0.1/(sfreq/2),30/(sfreq/2)], output='ba', btype="bandpass")
         band_data = [signal.lfilter(band_num, band_dem,signal.lfilter(band_num, band_dem, row)) for row in data]
         band_freqs = [fftpack.rfft(row) for row in band_data]
         band_mean = [sum(row[1:30]) / len(row[1:30])
                      for row in band_freqs]
 
         return [band_mean[i] - notch_mean[i] > 0.1 for i in range(len(band_mean))]
+
+    @staticmethod
+    def scale(data, factor):
+        return numpy.array([(val*factor for val in row) for row in data])
+
 
 

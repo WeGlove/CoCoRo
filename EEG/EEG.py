@@ -3,6 +3,7 @@ import threading
 import time
 import numpy as np
 import struct
+from EEG import SuperPrinter
 
 
 class EEG:
@@ -23,6 +24,9 @@ class EEG:
         self.__events = []
 
         self.device = self.__get_eeg_device()
+
+    def get_data(self):
+        return self.__data
 
     def toggle_recording(self):
         if not self.__recording:
@@ -57,8 +61,8 @@ class EEG:
             #new_data = np.random.rand(self.__features, 1)
             # append the new data vector to the right of the data matrix.
             self.__data = np.c_[ self.__data, new_data ]
-            self.print_d()
-            time.sleep(1)
+            #self.print_d()
+            #time.sleep(1)
         print("stopping")
 
     def __get_eeg_device(self):
@@ -72,12 +76,17 @@ class EEG:
         buffer_length = self.__frame_length * self.__channel_number * self.__bytes_per_channel
         buffer = bytearray(buffer_length)
         self.device.GetData(self.__frame_length, buffer, buffer_length)
-        i = 0
-        d = []
-        while i < self.__features * 3: # 3 being the precision
-            d.append(struct.unpack('f', b'\x00' + buffer[i:i + 3]))
-            i += 3
-        return np.array(d)
+        data = np.zeros((self.__features, 0))
+        for _ in range(self.__frame_length):
+            i = 0
+            d = []
+            while i < self.__features * 4:  # 3 being the precision
+                d.append(struct.unpack('f', buffer[i:i + 4]))
+                i += 4
+            nd = np.array(d)
+            #print(nd[0])
+            data = np.c_[data, nd]
+        return data
 
     def __write_to_file(self, data):
         # maybe change type to appending instead of overwriting.
@@ -91,10 +100,3 @@ class EEG:
 
 
 
-eeg = EEG('test.bin')
-eeg.toggle_recording()
-#eeg.set_event(2, 2)
-time.sleep(5)
-#eeg.set_event(4, 1)
-eeg.toggle_recording()
-#eeg.print_e()

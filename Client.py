@@ -1,4 +1,4 @@
-import Robot
+#import Robot
 import Net
 import random
 from yee.de.dfki.tecs.robot.baxter.ttypes import *
@@ -81,12 +81,30 @@ while True:
     print(robot.wait_for_events())
 """
 
-
+"""
 robot = Robot.Robot.robot_side_quickstart()
 while True:
     robot.publish("moveArm", moveArm(1))
     print("sending something")
+"""
 
+from EEG import EEG
+from EEG import SuperPrinter
+from EEG import Filtering
+import time
+import numpy
+eeg = EEG.EEG('test.bin')
+eeg.toggle_recording()
+eeg.set_event(2, 2)
+time.sleep(10)
+eeg.set_event(4, 1)
+eeg.toggle_recording()
+eeg.print_e()
+data = eeg.get_data()
+#data = numpy.random.rand(8,250)
+print(Filtering.Filtering.check_quality(data, 250))
+
+SuperPrinter.SuperPrinter.plot(data)
 
 #c = Client()
 #c.train()
