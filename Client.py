@@ -3,11 +3,12 @@ import Net
 import time
 import random
 from yee.de.dfki.tecs.robot.baxter.ttypes import *
-#from EEG import EEG
+from EEG import EEG
 from enum import Enum
 import os
 import json
-
+import numpy
+import Classifier
 
 class Events(Enum):
     DEFAULT =           0b0000000
@@ -29,19 +30,20 @@ class Events(Enum):
 
 class Client:
 
-    BREAKTIME = 2
+    BREAKTIME = 1.5
     URI = "tecs://localhost:9000/ps"  # URI of the TECS server
     SHAPE = (2000,6800,8000)  # (Numpy) shape for the input for the net
-    PATH = ""  # Filepath and name to the keras model
+    PATH = "Recordings\\"  # Filepath and name to the keras model
     PATH_CNN = PATH + "cnn_model.h5" # PATH to the CNN
     NO_IMAGES = 12  # Number of images in the trials
     P = 0.8  # Probability of being right on an image in training
     EPOCHS = 42  # How long to train the net for
+    DURATION = 8 * 60
 
     def __init__(self, amt_trials):
         print(self.SHAPE)
         self.robot = Robot.Robot.eeg_side_quickstart(self.URI)
-        self.eeg = EEG.EEG("recording.bin")
+        self.eeg = EEG.EEG(self.PATH)
         self.net = Net.Net(self.SHAPE)
         self.labels = []
         self.amt_trials = amt_trials  # Amount of trials
@@ -54,7 +56,11 @@ class Client:
             self.net.createCNN()
 
     def train(self):
-        for i in range(self.amt_trials):
+        begin = time.time()
+        index = 0
+
+        while time.time() - begin < self.DURATION:
+            index += 1
             self.robot.publish("show", show(12))
             event = self.robot.wait_for_events()
             shown_event = event.parse(shown())
@@ -70,16 +76,17 @@ class Client:
             actual_image = random.choice(self.createDistribution(image, self.P))  # Get actually shown image
             self.robot.publish(moveArm(0 if actual_image < 6 else 1))
             self.eeg.toggle_recording()
-            self.eeg.set_event(Events.MOVEARMLEFT if actual_image < 6 else Events.MOVEARMRIGHT, len(self.eeg.get_data()))#TODO index?
+            self.eeg.set_event(Events.MOVEARMLEFT if actual_image < 6 else Events.MOVEARMRIGHT)
             event = self.robot.wait_for_events()
             moved_event = event.parse(moved())
-            time.sleep(1)
+            time.sleep(1)  # To make sure the recording is long enough
             self.eeg.toggle_recording()
             if not moved_event.success:
                 raise Exception("Error")
+            self.eeg.write_to_file(str(index), str(index))
+            self.eeg.clear()
             if (image < 6 and actual_image >= 6) or (image >= 6 and actual_image < 6):
                 self.labels.append("ErrP")
-                self.eeg.__write_to_file()  # TODO Files and stuff
                 self.robot.publish("reset", reset())
                 event = self.robot.wait_for_events()
                 moved_event = event.parse(moved())
@@ -91,16 +98,17 @@ class Client:
                                             (1 if actual_image < 6 else
                                              (2 if actual_image < 9 else 3))))
             self.eeg.toggle_recording()
-            self.eeg.set_event(Events.MOVECATEGROYLEFT if actual_image < 6 else Events.MOVECATEGROYRIGHT, len(self.eeg.get_data()))#TODO index?
+            self.eeg.set_event(Events.MOVECATEGROYLEFT if actual_image < 6 else Events.MOVECATEGROYRIGHT)
             event = self.robot.wait_for_events()
             moved_event = event.parse(moved())
             time.sleep(1)
             self.eeg.toggle_recording()
             if not moved_event.success:
                 raise Exception("Error")
+            self.eeg.write_to_file(str(index), str(index))
+            self.eeg.clear()
             if (image % 6 < 3 and actual_image % 6 >= 3) or (image % 6 >= 3 and actual_image % 6 < 3):
                 self.labels.append("ErrP")
-                self.eeg.__write_to_file()  # TODO Files and stuff
                 self.robot.publish("reset", reset())
                 event = self.robot.wait_for_events()
                 moved_event = event.parse(moved())
@@ -112,8 +120,7 @@ class Client:
             self.eeg.toggle_recording()
             self.eeg.set_event(
                 Events.MOVEIMAGEONE if actual_image % 3 == 0 else
-                (Events.MOVEIMAGETWO if actual_image % 3 == 1 else Events.MOVEIMAGETHREE),
-                len(self.eeg.get_data()))
+                (Events.MOVEIMAGETWO if actual_image % 3 == 1 else Events.MOVEIMAGETHREE))
             event = self.robot.wait_for_events()
             moved_event = event.parse(moved())
             time.sleep(1)
@@ -125,23 +132,101 @@ class Client:
             if not moved_event.success:
                 raise Exception("Error")
             # ELSE reset to original position and restart whole trial as success
-            self.eeg.__write_to_file()  # TODO Files and stuff
+            self.eeg.write_to_file(str(index), str(index))
+            self.eeg.clear()
             self.robot.publish("reset", 0)
             event = self.robot.wait_for_events()
             moved_event = event.parse(moved())
 
-        with open(self.PATH + "LABELS_{}.json".format(time.time()), "w+") as f:
+        with open(self.PATH + "LABELS.json", "w+") as f:
             json.dump(f, self.labels)
 
-    def train_net(self, directory):
-        files = os.listdir(directory)
-        recordings = self.__load_recordings(directory)
-        labels = json.load(directory + some_name)
+    def run(self):
+        classifier = Classifier.Classifier()
+        begin = time.time()
+        index = 0
+
+        while time.time() - begin < self.DURATION:
+            index += 1
+            self.robot.publish("show", show(12))
+            event = self.robot.wait_for_events()
+            shown_event = event.parse(shown())
+            while True:
+                image_text = input("Enter the next image")
+                words = ["bring", "give", "put", "conference_room", "entrance", "lab", "1", "2", "3", "Hammer", "Level", "Wrench"]
+                try:
+                    image = words.index(image_text)
+                    break
+                except Exception:
+                    print("Entered unknown command. Try again")
+
+            self.robot.publish("show", show(image))
+            event = self.robot.wait_for_events()
+            shown_event = event.parse(shown())
+            if shown_event.shown < 0:
+                raise Exception("Error")
+
+            classification = classifier.classify(image)
+            self.robot.publish("moveArm", moveArm(0 if classification < 6 else 1))
+            self.eeg.toggle_recording()
+            event = self.robot.wait_for_events()
+            moved_event = event.parse(moved())
+            time.sleep(1)  # To make sure the recording is long enough
+            self.eeg.toggle_recording()
+            if not moved_event.success:
+                raise Exception("Error")
+            prediction = self.net.predict(self.eeg.get_data())
+            if prediction == 1:
+                self.robot.publish("reset", reset())
+                event = self.robot.wait_for_events()
+                moved_event = event.parse(moved())
+                continue
+            else:
+                self.eeg.clear()
+
+            self.robot.publish(moveCategory(0 if classification < 3 else
+                                            (1 if classification < 6 else
+                                             (2 if classification < 9 else 3))))
+            self.eeg.toggle_recording()
+            event = self.robot.wait_for_events()
+            moved_event = event.parse(moved())
+            time.sleep(1)
+            self.eeg.toggle_recording()
+            if not moved_event.success:
+                raise Exception("Error")
+            if (image % 6 < 3 and classification % 6 >= 3) or (image % 6 >= 3 and classification % 6 < 3):
+                self.robot.publish("reset", reset())
+                event = self.robot.wait_for_events()
+                moved_event = event.parse(moved())
+                continue
+            else:
+                self.eeg.clear()
+
+            self.robot.publish(moveImg(classification % 3))
+            self.eeg.toggle_recording()
+            event = self.robot.wait_for_events()
+            moved_event = event.parse(moved())
+            time.sleep(1)
+            self.eeg.toggle_recording()
+            if not moved_event.success:
+                raise Exception("Error")
+            # ELSE reset to original position and restart whole trial as success
+            self.robot.publish("reset", 0)
+            event = self.robot.wait_for_events()
+            moved_event = event.parse(moved())
+
+        with open(self.PATH + "LABELS.json", "w+") as f:
+            json.dump(f, self.labels)
+
+    def train_net(self):
+        files = [file for file in os.listdir(self.PATH) if file.endswith(".npy")]
+        recordings = self.__load_recordings(files)
+        labels = json.load(self.PATH + "LABELS.json")
         self.net.fit(len(self.labels), recordings, labels, self.EPOCHS)
         self.net.save(self.PATH_CNN)
 
     def __load_recordings(self, files):
-        return [self.eeg.__load_recoding(file) for file in files]
+        return [numpy.load(self.PATH + file) for file in files]
 
     def createDistribution(self, selected, targetdistr):
         amt = 1
@@ -172,8 +257,6 @@ class Client:
             sel.remove(selected)
             return input.append(random.choice(sel))
 
-    def run(self):
-        pass
 
 
 # "tecs://172.31.1.132:9000/ps"
@@ -183,30 +266,29 @@ robot = Robot.Robot.robot_side_quickstart()
 while True:
     print(robot.wait_for_events())
 """
-robot = Robot.Robot.eeg_side_quickstart()
-while True:
-    input()
-    robot.wait_for_events()
+#robot = Robot.Robot.eeg_side_quickstart()
+#while True:
+#    input()
+#    robot.wait_for_events()
 
 
-"""
+
 from EEG import EEG
 from EEG import SuperPrinter
 from EEG import Filtering
 import time
 import numpy
-eeg = EEG.EEG('test.bin')
-eeg.toggle_recording()
-eeg.set_event(2, 2)
-time.sleep(10)
-eeg.set_event(4, 1)
-eeg.toggle_recording()
-eeg.print_e()
-data = eeg.get_data()
-#data = numpy.random.rand(8,250)
-print(Filtering.Filtering.check_quality(data, 250))
+eeg = EEG.EEG('')
+printer = SuperPrinter.SuperPrinter()
 
-SuperPrinter.SuperPrinter.plot(data)
-"""
-#c = Client()
-#c.train()
+eeg.toggle_recording()
+time.sleep(10)
+eeg.toggle_recording()
+data = eeg.get_data()
+printer.plot(data)
+print(Filtering.Filtering.check_quality(data[:250],250))
+#data = numpy.random.rand(8,250)
+#print(Filtering.Filtering.check_quality(data, 250))
+
+
+

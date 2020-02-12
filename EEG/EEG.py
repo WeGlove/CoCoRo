@@ -4,12 +4,13 @@ import time
 import numpy as np
 import struct
 from EEG import SuperPrinter
+import json
 
 
 class EEG:
 
-    def __init__(self, filename):
-        self.__filename = filename
+    def __init__(self, path):
+        self.__path = path
 
         self.__frame_length = 1  # for debugging purpose just one sample
         self.__bytes_per_channel = 4  # actual 3 bytes per channel but one for buffer.
@@ -28,17 +29,26 @@ class EEG:
     def get_data(self):
         return self.__data
 
+    def get_events(self):
+        return self.__events
+
     def toggle_recording(self):
         if not self.__recording:
+            self.__record_thread = threading.Thread(target=self.__record)
             self.__record_thread.start()
         else:
             self.__record_thread.do_run = False
             self.__record_thread.join()
+            while self.__record_thread.is_alive():
+                pass
             # TODO: write data matrix to file.
         self.__recording = not self.__recording
         
-    def set_event(self, index, event):
-        self.__events.append((index, event))
+    def set_event(self, event):
+        self.__events.append((len(self.__data[0, :]), event))
+
+    def set_data(self, data):
+        self.__data = data
 
     def print_d(self):
         print(self.__data)
@@ -49,7 +59,7 @@ class EEG:
     def __record(self):
         t = threading.currentThread()
         # as long as `do_run` flag has not been set from main thread continue
-        self.device.StartAcquisition(True)
+        self.device.StartAcquisition(False)
         print(self.device.GetNumberOfAcquiredChannels())
         self.__channel_number = self.device.GetNumberOfAcquiredChannels()
 
@@ -63,6 +73,7 @@ class EEG:
             self.__data = np.c_[ self.__data, new_data ]
             #self.print_d()
             #time.sleep(1)
+        self.device.StopAcquisition()
         print("stopping")
 
     def __get_eeg_device(self):
@@ -76,29 +87,34 @@ class EEG:
         buffer_length = self.__frame_length * self.__channel_number * self.__bytes_per_channel
         buffer = bytearray(buffer_length)
         self.device.GetData(self.__frame_length, buffer, buffer_length)
-        data = np.zeros((self.__features, 0))
-        for _ in range(self.__frame_length):
-            i = 0
-            d = []
-            while i < self.__features * 4:  # 3 being the precision
-                d.append(struct.unpack('f', buffer[i:i + 4]))
-                i += 4
-            nd = np.array(d)
+        #data = np.zeros((self.__features, 0))
+        #for _ in range(self.__frame_length):
+        i = 0
+        d = []
+        while i < self.__features * 4:  # 3 being the precision
+            d.append(struct.unpack('f', buffer[i:i + 4]))
+            i += 4
+        return np.array(d)
             #print(nd[0])
-            data = np.c_[data, nd]
-        return data
+        #    data = np.c_[data, nd]
+        #return data
 
-    def __write_to_file(self, data):
-        #TODO save events
-        # maybe change type to appending instead of overwriting.
-        with open(self.__filename, 'wb') as f:
-            f.write(data)
+    def clear(self):
+        """
+            Clears the events list and the EEG data
+        """
+        self.__events = []
+        self.__data = np.zeros((self.__features, 0))
 
-    def __read_from_file(self):
-        #TODO load events
-        with open(self.__filename, 'rb') as f:
-            data = f.read()
-        return data
+    def write_to_file(self, dataname="data", eventname="events"):
+        np.save(self.__path + dataname, self.__data)
+        with open(self.__path + eventname + ".json", "w") as f:
+            json.dump(self.__events, f)
+
+    def read_from_file(self, dataname="data", eventname="events"):
+        self.__data = np.load(self.__path + dataname + ".npy")
+        with open(self.__path + eventname + ".json", "r") as f:
+            self.__events = json.load(f)
 
 
 

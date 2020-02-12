@@ -38,7 +38,7 @@ class Net:
         :param epochs: how long to train the model for
         :return: None
         """
-        self.model.fit(data,labels,batch_size,epochs)
+        self.model.fit(data, labels, batch_size, epochs)
 
     def save(self, path):
         self.model.save(path, overwrite=True)
