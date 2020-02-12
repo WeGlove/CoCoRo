@@ -89,11 +89,13 @@ class EEG:
         return data
 
     def __write_to_file(self, data):
+        #TODO save events
         # maybe change type to appending instead of overwriting.
         with open(self.__filename, 'wb') as f:
             f.write(data)
 
     def __read_from_file(self):
+        #TODO load events
         with open(self.__filename, 'rb') as f:
             data = f.read()
         return data

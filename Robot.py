@@ -19,6 +19,8 @@ class Robot:
 
     def connect(self):
         self.client.connect()
+        while not self.client.connected():
+            pass
 
     def disconnect(self):
         self.client.disconnect()
@@ -54,7 +56,7 @@ class Robot:
         self.client.publish(".*", "shown", shown(shownImg))
 
     def publish(self, command_text, command_attribute):
-        print(self.client.publish(".*", command_text, command_attribute))
+        self.client.publish(".*", command_text, command_attribute)
 
     @staticmethod
     def ps_tcp_example(uri="tecs://localhost:9000/ps"):

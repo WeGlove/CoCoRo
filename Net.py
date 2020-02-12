@@ -15,7 +15,6 @@ class Net:
         This creates a new CNN as specified in "Classification of Error Related Potentials using Convolutional Neural Networks" by Bellary et al.
         :return:None
         """
-
         self.model.add(Convolution2D(filters=16, kernel_size=(2,64), input_shape= self.input_shape))
         self.model.add(Convolution2D(filters=32, kernel_size=(1,64), activation='relu'))
         self.model.add(Dropout(0.25))
@@ -46,4 +45,7 @@ class Net:
 
     def load(self, path):
         self.model = load_model(path)
+
+    def predict(self, data):
+        return self.model.predict(data)
 
