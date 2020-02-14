@@ -22,7 +22,10 @@ fig.suptitle("EEG signals", fontsize=20)
 for i in range(8):  # for all features one plot
     # display the last 500 elements of the data matrix
     # assuming the eeg already recorded 2 seconds!!!!!!
-    line[i], = axs[i].plot(data[i][-500:], color=colors[i])  # returns a tuple of line objects, thus the comma
+    # for demonstration not the last 500 elements, but a sliding window of 500
+    # elements to simulate realtime data flow.
+    # line[i], = axs[i].plot(data[i][-500:], color=colors[i])  # returns a tuple of line objects, thus the comma
+    line[i], = axs[i].plot(data[i][0:500], color=colors[i])  # returns a tuple of line objects, thus the comma
     axs[i].set_title(f"electrode {i}")
     axs[i].set_ylabel("frequency")
 axs[7].set_xlabel("timestamp")
@@ -32,9 +35,11 @@ axs[7].set_xlabel("timestamp")
 # data matrix is updated constantly in the background, we should get a nice
 # realtime data plot.
 #TODO: obviously put the live plot in a separate GUI thread.
-while True:
+# for demonstration we just shift a sliding window of size 500 over the array
+# to simulate realtime data flow.
+for offset in range(2000):
     for i in range(8):
-        line[i].set_ydata(data[i][-500:])
+        line[i].set_ydata(data[i][offset: 500 + offset])
     fig.canvas.draw()
     fig.canvas.flush_events()
 
