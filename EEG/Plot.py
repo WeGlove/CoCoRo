@@ -2,15 +2,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # TODO: put the whole plot functionality in a class and integrate with the
-# actual data array
-# generate test data. 250 = frequency, 10 = time in seconds
+#  actual data array
 data = np.random.rand(8, 2500)
 
 plt.ion()
-# TODO: choose and exchange some colors. For example `pink` on white background
-# is not very appealing.
+# TODO: choose and exchange some colors. For example `yellow` on white background
+#  is not very appealing.
 colors = ['red', 'blue', 'green', 'yellow', 'cyan', 'violet', 'orange', 'pink']
-fig, axes = plt.subplots(8, 1, sharex=True)
+fig, axes = plt.subplots(8, 1, figsize=(15, 10), sharex=True) # figure size in inches.
 lines = [None] * 8
 fig.suptitle("EEG signals", fontsize=20)
 fig.show()
@@ -23,8 +22,7 @@ for i in range(8):  # for all features one plot
     # elements to simulate realtime data flow.
     # line[i], = axs[i].plot(data[i][-500:], color=colors[i])  # returns a tuple of line objects, thus the comma
     lines[i], = axes[i].plot(data[i][0:500], color=colors[i], animated=True)
-    axes[i].set_title(f"electrode {i}")
-    axes[i].set_ylabel("frequency")
+    axes[i].set_ylabel(f"electrode {i + 1}")
 axes[7].set_xlabel("timestamp")
 
 # store the background of the plots to reuse them instead of redrawing.
@@ -35,8 +33,8 @@ backgrounds = [fig.canvas.copy_from_bbox(ax.bbox) for ax in axes]
 # data matrix is updated constantly in the background, we should get a nice
 # realtime data plot.
 # TODO: obviously put the live plot in a separate GUI thread.
-# for demonstration we just shift a sliding window of size 500 over the array
-# to simulate realtime data flow.
+#  for demonstration we just shift a sliding window of size 500 over the array
+#  to simulate realtime data flow.
 for offset in range(2000):
     for i in range(8):
         fig.canvas.restore_region(backgrounds[i])
