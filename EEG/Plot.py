@@ -1,43 +1,53 @@
-import matplotlib.pyplot as plt
+import pyqtgraph as pg
+from pyqtgraph.Qt import QtCore, QtGui
 import numpy as np
 
-# TODO: put the whole plot functionality in a class and integrate with the
-#  actual data array
-data = np.random.rand(8, 2500)
+import random
+import colorsys
 
-plt.ion()
-# TODO: choose and exchange some colors. For example `yellow` on white background
-#  is not very appealing.
-colors = ['red', 'blue', 'green', 'yellow', 'cyan', 'violet', 'orange', 'pink']
-fig, axes = plt.subplots(8, 1, figsize=(15, 10), sharex=True) # figure size in inches.
-lines = [None] * 8
-fig.suptitle("EEG signals", fontsize=20)
-fig.show()
-fig.canvas.draw()
+offset = 0  # just for debugging to simulate the EEG data flow.
 
-for i in range(8):  # for all features one plot
-    # display the last 500 elements of the data matrix
-    # assuming the eeg already recorded 2 seconds!!!!!!
-    # for demonstration not the last 500 elements, but a sliding window of 500
-    # elements to simulate realtime data flow.
-    # line[i], = axs[i].plot(data[i][-500:], color=colors[i])  # returns a tuple of line objects, thus the comma
-    lines[i], = axes[i].plot(data[i][0:500], color=colors[i], animated=True)
-    axes[i].set_ylabel(f"electrode {i + 1}")
-axes[7].set_xlabel("timestamp")
+win = pg.GraphicsWindow(size=(1500, 1000))
+win.setWindowTitle('EEG signals')
+win.setAntialiasing(True)
 
-# store the background of the plots to reuse them instead of redrawing.
-backgrounds = [fig.canvas.copy_from_bbox(ax.bbox) for ax in axes]
+# win.setLabel(axis='left', text="asfd")
 
-# update the plot data instead of clearing + redrawing the whole diagram.
-# since we are using the last 500 elements / the last 2 seconds and the
-# data matrix is updated constantly in the background, we should get a nice
-# realtime data plot.
-# TODO: obviously put the live plot in a separate GUI thread.
-#  for demonstration we just shift a sliding window of size 500 over the array
-#  to simulate realtime data flow.
-for offset in range(2000):
-    for i in range(8):
-        fig.canvas.restore_region(backgrounds[i])
-        lines[i].set_ydata(data[i][offset: 500 + offset])
-        axes[i].draw_artist(lines[i])
-        fig.canvas.blit(axes[i].bbox)
+# create 8 subplots, one for each eeg electrode.
+plots = [win.addPlot(col=1, row=r, xRange=[0, 1250], yRange=[-1, 1]) for r in range(8)]
+for index, plot in enumerate(plots):
+    plot.setLabel(axis='left', text=f"electrode {index + 1}")
+# add one curve to each subplot
+curves = [plot.plot() for plot in plots]
+
+data = np.random.rand(8, 25000)
+data -= .5
+data *= 2
+
+
+# until proper color are chosen, just using random ones.
+def generate_color():
+    h, s, l = random.random(), 0.5 + random.random()/2.0, 0.4 + random.random()/5.0
+    return [int(256*i) for i in colorsys.hls_to_rgb(h, l, s)]
+
+
+colors = [generate_color() for _ in range(8)]
+
+
+def plot():
+    # global offset
+    for index, curve in enumerate(curves):
+        pen = pg.mkPen(colors[index], style = QtCore.Qt.SolidLine)
+        curve.setData(data[index][offset:offset + 1250], pen=pen)
+
+
+def update():
+    global offset
+    offset += 1
+    plot()
+
+
+timer = pg.QtCore.QTimer()
+timer.timeout.connect(update)
+timer.start(1)
+QtGui.QApplication.instance().exec_()
