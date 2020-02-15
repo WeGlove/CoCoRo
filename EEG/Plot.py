@@ -10,6 +10,9 @@ import threading
 
 
 def generate_color():
+    """ Generates bright colors and avoids black.
+        Used to color the different EEG signal plots.
+    """
     h, s, l = random.random(), 0.5 + random.random() / 2.0, 0.4 + random.random() / 5.0
     return [int(256 * i) for i in colorsys.hls_to_rgb(h, l, s)]
 
@@ -17,11 +20,6 @@ def generate_color():
 class GUI:
 
     def __init__(self):
-
-        # self.data = data
-
-        self.offset = 0  # just for debugging to simulate the EEG data flow.
-
         self.win = pg.GraphicsWindow(size=(1500, 1000))
         self.win.setWindowTitle('EEG signals')
         self.win.setAntialiasing(True)  # not sure if it does anything
@@ -36,19 +34,22 @@ class GUI:
         # until proper color are chosen, just using random ones.
         self.colors = [generate_color() for _ in range(8)]
 
-    def plot(self):
+    def update(self):
+        """ GUI update procedure. Currently working on the global numpy array
+            containing the data. Not a clean implementation, but currently the
+            best.
+        """
         global data
         for index, curve in enumerate(self.curves):
             pen = pg.mkPen(self.colors[index], style=QtCore.Qt.SolidLine)
-            # curve.setData(self.data[index][self.offset:self.offset + 1250], pen=pen)
             curve.setData(data[index][-1250:], pen=pen)
-
-    def update(self):
-        self.offset += 1
-        self.plot()
 
 
 def threaded(fn):
+    """ Decorator for the thread run method.
+        Used to get a handle of the thread for joining the thread after
+        using it.
+    """
     def wrapper(*args, **kwargs):
         thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
         thread.start()
@@ -58,6 +59,10 @@ def threaded(fn):
 
 
 class GUI_thread:
+    """ GUI thread creates the qt window and plots all 8 eeg signal graphs.
+        Currently the timer is set to 4, which should be 4 milliseconds, which
+        should be exactly the interval of new data arriving from the EEG headset.
+    """
     @threaded
     def run(self):
         _gui = GUI()
@@ -74,12 +79,12 @@ data *= 2
 gui = GUI_thread()
 handle = gui.run()
 
+# update the global numpy array containing the simulated EEG signal data.
 while True:
     new_data = np.random.rand(8, 1)
-    new_data -= .5
-    new_data *= 2
+    new_data -= .5  # center it on the origin
+    new_data *= 2  # scale it for better visualization
     data = np.c_[data, new_data]
-    time.sleep(.004)  # 250 hz
-    # print(data[0][-1:])
+    time.sleep(.004)  # one sample every 4 ms -> 250 hz
 
-handle.join()
+# handle.join()
