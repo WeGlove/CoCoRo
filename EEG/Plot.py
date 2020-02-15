@@ -43,6 +43,7 @@ class GUI:
         for index, curve in enumerate(self.curves):
             pen = pg.mkPen(self.colors[index], style=QtCore.Qt.SolidLine)
             curve.setData(data[index][-1250:], pen=pen)
+        pg.QtGui.QApplication.processEvents()  # not sure if necessary or useful
 
 
 def threaded(fn):
@@ -80,11 +81,11 @@ gui = GUI_thread()
 handle = gui.run()
 
 # update the global numpy array containing the simulated EEG signal data.
-while True:
+while handle.is_alive():
     new_data = np.random.rand(8, 1)
     new_data -= .5  # center it on the origin
     new_data *= 2  # scale it for better visualization
     data = np.c_[data, new_data]
     time.sleep(.004)  # one sample every 4 ms -> 250 hz
 
-# handle.join()
+handle.join()
