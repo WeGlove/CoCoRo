@@ -21,6 +21,7 @@ class GUI:
     """ Main GUI window class. Defines the window and initializes the graphs
         for the data from each electrode coming from the EEG headset.
     """
+
     def __init__(self):
         self.win = pg.GraphicsWindow(size=(1500, 1000))
         self.win.setWindowTitle('EEG signals')
@@ -38,16 +39,27 @@ class GUI:
         # until proper color are chosen, using random ones.
         self.colors = [generate_color() for _ in range(8)]
 
+        self.confidence_label = self.win.addLabel(f'< span style = " font-size:20pt; font-weight:600;" >Prediction confidence: {0.00}< / span >', col=1, row=9)
+        # self.confidence_label.setAlignment(QtCore.Qt.AlignLeft)
+
     def update(self):
         """ GUI update procedure. Currently working on the global numpy array
             containing the data. Not a clean implementation, but currently the
             best.
         """
         global data  # currently the best option to use a global variable.
+        # global confidence
+
+        # example label value
+        val = data[0][-1]
+        if val < 0:
+            val *= -1
+        self.confidence_label.setText(f'< span style = " font-size:20pt; font-weight:600;" >Prediction confidence: {val:.2f}< / span >')
+
         # schedule a repaint for each subplot.
         for index, curve in enumerate(self.curves):
             pen = pg.mkPen(self.colors[index], style=QtCore.Qt.SolidLine)
-            curve.setData(data[index][-1250:], pen=pen)
+            curve.setData(data[index][-1250:], pen=pen)  # get the last 1250 elements
         # apply the render events.
         pg.QtGui.QApplication.processEvents()  # not sure if necessary or useful?!
 
@@ -57,6 +69,7 @@ def threaded(fn):
         Used to get a handle of the thread for joining the thread after
         using it.
     """
+
     def wrapper(*args, **kwargs):
         thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
         thread.start()
@@ -70,6 +83,7 @@ class GUI_thread:
         Currently the timer is set to 4, which should be exactly the interval
         of new data arriving from the EEG headset.
     """
+
     @threaded
     def run(self):
         gui = GUI()
