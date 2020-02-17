@@ -2,6 +2,8 @@ import numpy as np
 import unittest
 from EEG.EEG import EEG
 from EEG.EEG import SuperPrinter
+from keras.utils import to_categorical
+import Net
 
 class Tests(unittest.TestCase):
 
@@ -45,5 +47,22 @@ class Tests(unittest.TestCase):
         bools = tmp_data == data
         assert bools.all(), "Loaded incorrectly"
 
-    def test(self):
+    def test_net_train(self):
+        shape = np.array([8, 250, 1])
+        net = Net.Net(shape)
+        net.createCNN()
+        vals = np.array([np.array(np.random.rand(8, 250, 1))] * 192)
+        print(vals[0])
+        print("=============================")
+        print(vals[1])
+
+        labels = [0] * ((6 * 32)-1)
+        labels.append(1)
+        labels = to_categorical(labels)
+        print(labels)
+        net.fit(vals, labels, 6)
+
+        predict = np.array([np.array(np.random.rand(8, 250, 1))])
+
+
 

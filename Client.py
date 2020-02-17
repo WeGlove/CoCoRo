@@ -9,6 +9,7 @@ import os
 import json
 import numpy
 import Classifier
+from keras.utils import to_categorical
 
 class Events(Enum):
     DEFAULT =           0b0000000
@@ -222,7 +223,9 @@ class Client:
         files = [file for file in os.listdir(self.PATH) if file.endswith(".npy")]
         recordings = self.__load_recordings(files)
         labels = json.load(self.PATH + "LABELS.json")
-        self.net.fit(len(self.labels), recordings, labels, self.EPOCHS)
+        labels = [0 if label == "ErrP" else 1 for label in labels]
+        labels = to_categorical(labels)
+        self.net.fit(recordings, labels, self.EPOCHS, batch_size=len(self.labels))  # TODO correct batch size
         self.net.save(self.PATH_CNN)
 
     def __load_recordings(self, files):
