@@ -4,6 +4,7 @@ from EEG.EEG import EEG
 from EEG.EEG import SuperPrinter
 from keras.utils import to_categorical
 import Net
+import Client
 
 class Tests(unittest.TestCase):
 
@@ -63,6 +64,16 @@ class Tests(unittest.TestCase):
         net.fit(vals, labels, 6)
 
         predict = np.array([np.array(np.random.rand(8, 250, 1))])
+
+    def test_dist(self):
+        import random
+        client = Client.Client(10)
+        agg = [0]*12
+        for _ in range(1_000_000_0):
+            agg[random.choice(client.createDistribution(2, 0.66))] += 1
+        agg = [val/1_000_000_0 for val in agg]
+        print(agg)
+
 
 
 

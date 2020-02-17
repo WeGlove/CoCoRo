@@ -26,7 +26,7 @@ class Robot:
         self.client.disconnect()
 
     def wait_for_events(self):
-        while not self.client.can_recv(200):
+        while not self.client.can_recv():
             pass
 
         eve = self.client.recv()

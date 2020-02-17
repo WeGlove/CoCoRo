@@ -37,7 +37,7 @@ class Client:
     PATH = "Recordings\\"  # Filepath and name to the keras model
     PATH_CNN = PATH + "cnn_model.h5" # PATH to the CNN
     NO_IMAGES = 12  # Number of images in the trials
-    P = 0.8  # Probability of being right on an image in training
+    P = 0.66  # Probability of being right on an image in training
     EPOCHS = 42  # How long to train the net for
     DURATION = 8 * 60
 
@@ -234,7 +234,7 @@ class Client:
     def createDistribution(self, selected, targetdistr):
         amt = 1
         distr = amt/self.NO_IMAGES
-        output = range(12)
+        output = list(range(12))
         output = self.balanceOutcomes(selected, output)
         while (distr <targetdistr):
             output.append(selected)
@@ -246,19 +246,23 @@ class Client:
         if selected < 3:
             sel = list(range(3))
             sel.remove(selected)
-            return input.append(random.choice(sel))
+            input.append(random.choice(sel))
+            return input
         elif selected < 6:
             sel = list(range(3,6))
             sel.remove(selected)
-            return input.append(random.choice(sel))
+            input.append(random.choice(sel))
+            return input
         elif selected < 9:
             sel = list(range(6, 9))
             sel.remove(selected)
-            return input.append(random.choice(sel))
+            input.append(random.choice(sel))
+            return input
         else:
             sel = list(range(9, 12))
             sel.remove(selected)
-            return input.append(random.choice(sel))
+            input.append(random.choice(sel))
+            return input
 
 
 
@@ -269,13 +273,85 @@ robot = Robot.Robot.robot_side_quickstart()
 while True:
     print(robot.wait_for_events())
 """
-#robot = Robot.Robot.eeg_side_quickstart()
-#while True:
-#    input()
-#    robot.wait_for_events()
+"""
+def cont_test(robot):
+    time.sleep(1)
+    while True:
+        text = input("object:")
+        before = time.time()
+        if text == "arm":
+            text = input("condition")
+            before = time.time()
+            robot.publish("moveArm", moveArm(int(text)))
+            robot.wait_for_events()
+        elif text == "cat":
+            text = input("condition")
+            before = time.time()
+            robot.publish("moveCategory", moveCategory(int(text)))
+            robot.wait_for_events()
+        elif text == "img":
+            text = input("condition")
+            before = time.time()
+            robot.publish("moveImg", moveImg(int(text)))
+            robot.wait_for_events()
+        elif text == "reset":
+            before = time.time()
+            robot.publish("reset", reset())
+            robot.wait_for_events()
+        elif text == "show":
+            text = input("condition")
+            before = time.time()
+            robot.publish("show", show(int(text)))
+            robot.wait_for_events()
+        elif text == "quit":
+            break
+        print("Got out!")
+        after = time.time()
+        print("Command finished in {}s".format(after - before))
+
+def automatic(robot):
+    while True:
+        if (input("quit?") == "yes"):
+            break
+        arm = int(input("arm"))
+        cat = int(input("cat"))
+        img = int(input("img"))
+        input("Proceed with conditions arm={} cat={} img={}?".format(arm,cat,img))
+
+        before = time.time()
+
+        robot.publish("moveArm", moveArm(arm))
+        robot.wait_for_events()
+        robot.publish("moveCategory", moveCategory(cat))
+        robot.wait_for_events()
+        robot.publish("moveImg", moveImg(img))
+        robot.wait_for_events()
+
+        after = time.time()
+        print("Command finished in {}s".format(after - before))
+
+        robot.publish("reset", reset())
+        robot.wait_for_events()
+
+
+client = Client(10)
+client.train()
+
+robot = Robot.Robot.eeg_side_quickstart("tecs://192.168.1.132:9000/ps")
+
+while True:
+    text = input("Next Command")
+    if text == "auto":
+        automatic(robot)
+    elif text == "pick":
+        cont_test(robot)
+
+"""
 
 
 
+
+"""
 from EEG import EEG
 from EEG import SuperPrinter
 from EEG import Filtering
@@ -292,6 +368,7 @@ printer.plot(data)
 print(Filtering.Filtering.check_quality(data[:250],250))
 #data = numpy.random.rand(8,250)
 #print(Filtering.Filtering.check_quality(data, 250))
+"""
 
 
 
