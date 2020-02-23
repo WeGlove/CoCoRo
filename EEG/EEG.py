@@ -1,4 +1,4 @@
-import UnicornPy
+#import UnicornPy
 import threading
 import time
 import numpy as np
@@ -24,7 +24,7 @@ class EEG:
         # event list containing (`index`, `event`) tuples.
         self.__events = []
 
-        self.device = self.__get_eeg_device()
+        #self.device = self.__get_eeg_device()
 
     def get_data(self):
         return self.__data
@@ -76,12 +76,12 @@ class EEG:
         self.device.StopAcquisition()
         print("stopping")
 
-    def __get_eeg_device(self):
-        devices = UnicornPy.GetAvailableDevices(True)
-        print(devices)
-        if len(devices) == 0:
-            raise Exception("Couldn't find a device.")
-        return UnicornPy.Unicorn(devices[0])  # assuming only on device is in range.
+#    def __get_eeg_device(self):
+#        devices = UnicornPy.GetAvailableDevices(True)
+#        print(devices)
+#        if len(devices) == 0:
+ #           raise Exception("Couldn't find a device.")
+ #       return UnicornPy.Unicorn(devices[0])  # assuming only on device is in range.
 
     def __get_eeg_data(self):
         buffer_length = self.__frame_length * self.__channel_number * self.__bytes_per_channel
@@ -111,9 +111,11 @@ class EEG:
         with open(self.__path + eventname + ".json", "w") as f:
             json.dump(self.__events, f)
 
+
+
     def read_from_file(self, dataname="data", eventname="events"):
-        self.__data = np.load(self.__path + dataname + ".npy")
-        with open(self.__path + eventname + ".json", "r") as f:
+        self.__data = np.load(self.__path + dataname)
+        with open(self.__path + eventname, "r") as f:
             self.__events = json.load(f)
 
 

@@ -1,8 +1,8 @@
-import Robot
+#import Robot
 import Net
 import time
 import random
-from yee.de.dfki.tecs.robot.baxter.ttypes import *
+#from yee.de.dfki.tecs.robot.baxter.ttypes import *
 from EEG import EEG
 from EEG import Filtering
 from enum import Enum
@@ -39,20 +39,23 @@ class Client:
     BREAKTIME = 1.5
     URI = "tecs://192.168.1.132:9000/ps"  # URI of the TECS server
     SHAPE = (2000,6800,8000)  # (Numpy) shape for the input for the net
-    PATH = "Recordings\\"  # Filepath and name to the keras model
+    PATH = ".\Ressources\Recordings\\"  # Filepath and name to the keras model
+    print(PATH)
     PATH_CNN = PATH + "cnn_model.h5" # PATH to the CNN
     NO_IMAGES = 12  # Number of images in the trials
     P = 0.66  # Probability of being right on an image in training
-    EPOCHS = 42  # How long to train the net for
+    EPOCHS = 1  # How long to train the net for
     DURATION = 8 * 60
     SFREQ = 250
 
     def __init__(self, amt_trials):
         print(self.SHAPE)
-        self.robot = Robot.Robot.eeg_side_quickstart(self.URI)
+        #self.robot = Robot.Robot.eeg_side_quickstart(self.URI)
         self.eeg = EEG.EEG(self.PATH)
         self.net = Net.Net(self.SHAPE)
         self.labels = []
+        self.datalist = []
+        self.eventlist = []
         self.amt_trials = amt_trials  # Amount of trials
         #Plot.GUI_thread().run()
 
@@ -270,12 +273,14 @@ class Client:
             json.dump(f, self.labels)
 
     def train_net(self):
-        files = [file for file in os.listdir(self.PATH) if file.endswith(".npy")]
-        recordings = self.__load_recordings(files)
-        labels = json.load(self.PATH + "LABELS.json")
+        #files = [file for file in os.listdir(self.PATH) if file.endswith(".npy")]
+        self.net.createCNN()
+        recordings = self.datalist
+        #labels = json.load(self.PATH + "LABELS.json")
+        labels = self.eventlist
         labels = [0 if label == "ErrP" else 1 for label in labels]
         labels = to_categorical(labels)
-        self.net.fit(recordings, labels, self.EPOCHS, batch_size=len(self.labels))  # TODO correct batch size
+        self.net.fit(recordings[0], labels[0], self.EPOCHS, batch_size=1)
         self.net.save(self.PATH_CNN)
 
     def __load_recordings(self, files):
@@ -314,10 +319,61 @@ class Client:
             input.append(random.choice(sel))
             return input
 
+    def readFiles (self):
+        #129 == noErrP
+        #npy stores data
+        #json stores events
+        outputData = []
+        outputEvents = []
+        errorlist = []
+        errorfilelist = []
+        errorCount = 0
+        total = 0
+        for i in range(6):
+            addendum = "Recordings"+str(i)+"\\"
+            curdir = os.listdir(".\Ressources\Recordings\\"+addendum)
+            lendir = len(curdir)
+            j = 0
+            while (j < lendir):
+                total += 1
+                eventpath = curdir[j]
+                j += 1
+                datapath = curdir[j]
+                j += 1
+                self.eeg.read_from_file(addendum + datapath, addendum + eventpath)
+                allEvents = self.eeg.get_events()
+                try:
+                    if (allEvents[1][1] == 128):
+                        outputEvents.append("ErrP")
+                    else:
+                        outputEvents.append("noErrP")
+                except:
+                    errorCount += 1
+                    errorlist.append(allEvents)
+                    errorfilelist.append(eventpath)
+                    continue
+                outputData.append(self.eeg.get_data())
+        self.datalist = outputData
+        self.eventlist = outputEvents
+
+        print("Errors: " + str(errorCount) + "with total of: " + str(total) + "with Events" + str(errorlist)+ ", " + str(errorfilelist))
+
+
+
+
+
+        data = self.eeg.get_data()
+        events = self.eeg.get_events()
+        #print("Data: ", data)
+        #print ("Events: ", events)
+
 client = Client(0)
-client.train()
-print("Done Recording")
-input()
+client.readFiles()
+client.train_net()
+
+#client.train()
+#print("Done Recording")
+#input()
 
 
 """
@@ -399,7 +455,7 @@ def automatic(robot):
         robot.publish("reset", reset())
         robot.wait_for_events()
 
-
+"""
 robot = Robot.Robot.eeg_side_quickstart("tecs://192.168.1.132:9000/ps")
 
 while True:
@@ -408,7 +464,7 @@ while True:
         automatic(robot)
     elif text == "pick":
         cont_test(robot)
-
+"""
 
 
 

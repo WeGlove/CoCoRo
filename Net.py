@@ -36,7 +36,7 @@ class Net:
         self.model.add(MaxPooling2D(pool_size=1))
         self.model.add(Flatten())
         self.model.add(Dense(2, activation='softmax'))
-        custom_opt = optimizers.SGD(learning_rate=0.001, momentum=0.9)
+        custom_opt = optimizers.SGD(lr=0.001, momentum=0.9)
         self.model.compile(optimizer=custom_opt, loss='categorical_crossentropy')
 
 
