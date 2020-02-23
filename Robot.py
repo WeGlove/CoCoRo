@@ -26,8 +26,10 @@ class Robot:
         self.client.disconnect()
 
     def wait_for_events(self):
-        while not self.client.can_recv():
-            pass
+        while not self.client.can_recv(2000):
+            print(self.client.online())
+            print(self.subscriptions)
+            print("Cant recieve")
 
         eve = self.client.recv()
         print("received " + str(eve))

@@ -16,7 +16,6 @@ def generate_color():
     h, s, l = random.random(), 0.5 + random.random() / 2.0, 0.4 + random.random() / 5.0
     return [int(256 * i) for i in colorsys.hls_to_rgb(h, l, s)]
 
-
 class GUI:
     """ Main GUI window class. Defines the window and initializes the graphs
         for the data from each electrode coming from the EEG headset.
@@ -48,13 +47,13 @@ class GUI:
             best.
         """
         global data  # currently the best option to use a global variable.
-        # global confidence
+        global confidence
 
         # example label value
         val = data[0][-1]
         if val < 0:
             val *= -1
-        self.confidence_label.setText(f'< span style = " font-size:20pt; font-weight:600;" >Prediction confidence: {val:.2f}< / span >')
+        self.confidence_label.setText(f'< span style = " font-size:20pt; font-weight:600;" >Prediction confidence: {confidence:.2f}< / span >')
 
         # schedule a repaint for each subplot.
         for index, curve in enumerate(self.curves):
@@ -97,14 +96,14 @@ class GUI_thread:
 
 # we need at least 1250 elements in the data matrix before executing the gui
 # thread, otherwise it will crash because we are out of bounds.
-data = np.random.rand(8, 1250)
-data -= .5
-data *= 2
+#data -= .5
+#data *= 2
 
-handle = GUI_thread().run()
+#handle = GUI_thread().run()
 
 # we will simulate the data flow, coming from the EEG headset.
 # As soon as the GUI window gets closed we shut down the entire program.
+"""
 while handle.is_alive():
     new_data = np.random.rand(8, 1)
     new_data -= .5  # center it on the origin
@@ -113,3 +112,4 @@ while handle.is_alive():
     time.sleep(4 / 1000)  # one sample every 4 ms -> 250 hz
 
 handle.join()
+"""

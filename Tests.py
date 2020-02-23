@@ -69,9 +69,9 @@ class Tests(unittest.TestCase):
         import random
         client = Client.Client(10)
         agg = [0]*12
-        for _ in range(1_000_000_0):
+        for _ in range(1_000_000):
             agg[random.choice(client.createDistribution(2, 0.66))] += 1
-        agg = [val/1_000_000_0 for val in agg]
+        agg = [val/1_000_000 for val in agg]
         print(agg)
 
 

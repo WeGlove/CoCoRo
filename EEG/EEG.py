@@ -1,4 +1,4 @@
-#import UnicornPy
+import UnicornPy
 import threading
 import time
 import numpy as np
@@ -45,7 +45,7 @@ class EEG:
         self.__recording = not self.__recording
         
     def set_event(self, event):
-        self.__events.append((len(self.__data[0, :]), event))
+        self.__events.append([len(self.__data[0, :]), event])
 
     def set_data(self, data):
         self.__data = data
