@@ -53,6 +53,7 @@ class Tests(unittest.TestCase):
         net = Net.Net(shape)
         net.createCNN()
         vals = np.array([np.array(np.random.rand(8, 250, 1))] * 192)
+        print(vals.shape)
         print(vals[0])
         print("=============================")
         print(vals[1])

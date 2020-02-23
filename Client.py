@@ -38,7 +38,7 @@ class Client:
 
     BREAKTIME = 1.5
     URI = "tecs://192.168.1.132:9000/ps"  # URI of the TECS server
-    SHAPE = (2000,6800,8000)  # (Numpy) shape for the input for the net
+    SHAPE = (8,655,1)  # (Numpy) shape for the input for the net
     PATH = ".\Ressources\Recordings\\"  # Filepath and name to the keras model
     print(PATH)
     PATH_CNN = PATH + "cnn_model.h5" # PATH to the CNN
@@ -280,7 +280,21 @@ class Client:
         labels = self.eventlist
         labels = [0 if label == "ErrP" else 1 for label in labels]
         labels = to_categorical(labels)
-        self.net.fit(recordings[0], labels[0], self.EPOCHS, batch_size=1)
+        data = numpy.empty((len(recordings),8, 655), dtype=int)
+        for i in recordings:
+            dump = []
+            for k in range (8):
+                for j in range(655):
+                    dump.append(i[k][j])
+            dump = numpy.array(dump)
+            numpy.append(data, dump)
+        print (data.shape)
+
+
+        data = data.reshape(370, 8, 655, 1 )
+
+
+        self.net.fit(data, labels, self.EPOCHS, batch_size=1)
         self.net.save(self.PATH_CNN)
 
     def __load_recordings(self, files):
@@ -362,10 +376,7 @@ class Client:
 
 
 
-        data = self.eeg.get_data()
-        events = self.eeg.get_events()
-        #print("Data: ", data)
-        #print ("Events: ", events)
+
 
 client = Client(0)
 client.readFiles()
