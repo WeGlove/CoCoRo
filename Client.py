@@ -1,8 +1,8 @@
-#import Robot
+import Robot
 import Net
 import time
 import random
-#from yee.de.dfki.tecs.robot.baxter.ttypes import *
+from yee.de.dfki.tecs.robot.baxter.ttypes import *
 from EEG import EEG
 from EEG import Filtering
 from enum import Enum
@@ -44,7 +44,7 @@ class Client:
     PATH_CNN = PATH + "cnn_model.h5" # PATH to the CNN
     NO_IMAGES = 12  # Number of images in the trials
     P = 0.66  # Probability of being right on an image in training
-    EPOCHS = 1  # How long to train the net for
+    EPOCHS = 100  # How long to train the net for
     DURATION = 8 * 60
     SFREQ = 250
 
@@ -288,13 +288,14 @@ class Client:
                     dump.append(i[k][j])
             dump = numpy.array(dump)
             numpy.append(data, dump)
-        print (data.shape)
+
 
 
         data = data.reshape(370, 8, 655, 1 )
 
 
-        self.net.fit(data, labels, self.EPOCHS, batch_size=1)
+
+        self.net.fit(data, labels, self.EPOCHS, batch_size=1,validation=0.2)
         self.net.save(self.PATH_CNN)
 
     def __load_recordings(self, files):
