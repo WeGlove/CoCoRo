@@ -1,6 +1,7 @@
 import statistics
 from scipy import signal, fftpack
 import numpy
+import mne
 
 class Filtering:
 
@@ -63,6 +64,21 @@ class Filtering:
     @staticmethod
     def scale(data, factor):
         return numpy.array([(val*factor for val in row) for row in data])
+
+    @staticmethod
+    def notch(data, freq=50,sfreq=250):
+        fif_num, fif_dem = signal.iirnotch(50, 50 / Filtering.BANDWITH, fs=sfreq)
+        return numpy.array([signal.lfilter(fif_num, fif_dem, row) for row in data])
+
+    @staticmethod
+    def bandpass(data, sfreq=250):
+        print(len(data[0]))
+        new_data = mne.filter.filter_data(data, sfreq, 5, 40)
+
+        #b,a = signal.butter(3,[5/(sfreq/2),40/(sfreq/2)], btype="band")
+        #new_data = [signal.lfilter(b, a, row)for row in data]
+        return new_data
+
 
 
 

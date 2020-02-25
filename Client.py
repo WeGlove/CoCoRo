@@ -97,13 +97,15 @@ class Client:
                 time.sleep(1)
 
                 actual_image = random.choice(self.createDistribution(image, self.P))  # Get actually shown image
-                self.robot.publish("moveArm", moveArm(0 if actual_image < 6 else 1))
                 self.eeg.toggle_recording()
+                trial_begin = time.time()
+                time.sleep(0.5)
+                self.robot.publish("moveArm", moveArm(0 if actual_image < 6 else 1))
                 self.eeg.set_event(Events.MOVEARMLEFT.value if actual_image < 6 else Events.MOVEARMRIGHT.value)
                 moved_event = self.robot.wait_for_events()[0]
                 if not isinstance(event, moved):
                     print("something is wrong!")
-                time.sleep(1)  # To make sure the recording is long enough
+                time.sleep(1.2 + 0 - (time.time() - trial_begin)) #TODO
                 self.eeg.toggle_recording()
                 Plot.data = self.eeg.get_data().copy()
                 print(Filtering.Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
@@ -125,16 +127,16 @@ class Client:
                 else:
                     self.labels.append("noErrP")
 
-
+                self.eeg.toggle_recording()
+                time.sleep(0.5)
                 self.robot.publish("moveCategory", moveCategory(0 if actual_image < 3 else
                                                 (1 if actual_image < 6 else
                                                  (2 if actual_image < 9 else 3))))
-                self.eeg.toggle_recording()
                 self.eeg.set_event(Events.MOVECATEGROYLEFT.value if actual_image < 6 else Events.MOVECATEGROYRIGHT.value)
                 moved_event = self.robot.wait_for_events()[0]
                 if not isinstance(event, shown):
                     print("something is wrong!")
-                time.sleep(1)
+                time.sleep(0.7)
                 self.eeg.toggle_recording()
                 Plot.data = self.eeg.get_data().copy()
                 print(Filtering.Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
@@ -156,15 +158,16 @@ class Client:
                 else:
                     self.labels.append("noErrP")
 
-                self.robot.publish("moveImg", moveImg(actual_image))
                 self.eeg.toggle_recording()
+                time.sleep(0.5)
+                self.robot.publish("moveImg", moveImg(actual_image))
                 self.eeg.set_event(
                     Events.MOVEIMAGEONE.value if actual_image % 3 == 0 else
                     (Events.MOVEIMAGETWO.value if actual_image % 3 == 1 else Events.MOVEIMAGETHREE.value))
                 moved_event = self.robot.wait_for_events()[0]
                 if not isinstance(event, moved):
                     print("something is wrong!")
-                time.sleep(1)
+                time.sleep(0.7)
                 self.eeg.toggle_recording()
                 Plot.data = self.eeg.get_data().copy()
                 print(Filtering.Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
@@ -374,14 +377,21 @@ class Client:
         print("Errors: " + str(errorCount) + "with total of: " + str(total) + "with Events" + str(errorlist)+ ", " + str(errorfilelist))
 
 
+from scipy import signal
 
+BANDWITH = 2
+sfreq = 250
 
+device = EEG.EEG("Recordings/")
+no = 203
+device.read_from_file(f"{no}.npy", f"{no}.json")
+data = device.get_data()[:,250:]
 
+EEG.SuperPrinter.SuperPrinter().plot(Filtering.Filtering.bandpass(data))
 
-
-client = Client(0)
-client.readFiles()
-client.train_net()
+#client = Client(0)
+#client.readFiles()
+#client.train_net()
 
 #client.train()
 #print("Done Recording")
