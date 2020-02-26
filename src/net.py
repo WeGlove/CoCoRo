@@ -3,8 +3,8 @@ from keras.layers import Convolution2D,Dense, MaxPooling2D, Dropout, Flatten
 from keras.models import Sequential
 from keras import optimizers
 from keras.models import load_model
-class Net:
 
+class Net:
     def __init__(self, input_shape):
         """
             input_shape is [number of samples per epoch, width, height]
@@ -18,7 +18,6 @@ class Net:
         """
         self.input_shape = input_shape
         self. model = Sequential()
-
 
     def createCNN(self):
         """
@@ -37,7 +36,6 @@ class Net:
         self.model.add(Dense(2, activation='softmax'))
         custom_opt = optimizers.SGD(lr=0.001, momentum=0.9)
         self.model.compile(optimizer=custom_opt, loss='categorical_crossentropy', metrics= ['accuracy'])
-
 
     def fit(self, data, labels, epochs, batch_size=32, validation= None):
         """
@@ -58,4 +56,3 @@ class Net:
 
     def predict(self, data):
         return self.model.predict(data)
-
