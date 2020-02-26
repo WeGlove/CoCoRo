@@ -6,6 +6,7 @@ from yee.de.dfki.tecs.robot.baxter.ttypes import *
 from EEG import EEG
 from EEG import Filtering
 from enum import Enum
+from Distributor import Distributor
 import os
 import json
 import numpy
@@ -51,6 +52,7 @@ class Client:
     def __init__(self, amt_trials):
         print(self.SHAPE)
         #self.robot = Robot.Robot.eeg_side_quickstart(self.URI)
+        self.distr = Distributor()
         self.eeg = EEG.EEG(self.PATH)
         self.net = Net.Net(self.SHAPE)
         self.labels = []
@@ -304,38 +306,59 @@ class Client:
     def __load_recordings(self, files):
         return [numpy.load(self.PATH + file) for file in files]
 
-    def createDistribution(self, selected, targetdistr):
-        amt = 1
-        distr = amt/self.NO_IMAGES
-        output = list(range(12))
-        output = self.balanceOutcomes(selected, output)
-        while (distr <targetdistr):
-            output.append(selected)
-            amt = amt+1
-            distr = amt / len(output)
-        return output
-
-    def balanceOutcomes(self, selected, input):
+    def createDistribution(self, selected):
         if selected < 3:
             sel = list(range(3))
-            sel.remove(selected)
-            input.append(random.choice(sel))
-            return input
+            selalt = list(range(3,6))
+            alt =  list(range(6, 9))
+            altalt = list(range(9, 12))
+            self.distr.blanceImages(sel,selected)
+            self.distr.balanceCategories(sel, selalt, selected)
+            self.distr.balanceArms(sel,selected,selalt,alt,altalt)
+            sel.extend(selalt)
+            sel.extend(alt)
+            sel.extend(altalt)
+            return sel
+
         elif selected < 6:
-            sel = list(range(3,6))
-            sel.remove(selected)
-            input.append(random.choice(sel))
-            return input
+            selalt = list(range(3))
+            sel = list(range(3, 6))
+            alt =  list(range(6, 9))
+            altalt = list(range(9, 12))
+            self.distr.blanceImages(sel, selected)
+            self.distr.balanceCategories(sel, selalt, selected)
+            self.distr.balanceArms(sel, selected, selalt, alt, altalt)
+            sel.extend(selalt)
+            sel.extend(alt)
+            sel.extend(altalt)
+            return sel
+
         elif selected < 9:
+            alt = list(range(3))
+            altalt = list(range(3, 6))
             sel = list(range(6, 9))
-            sel.remove(selected)
-            input.append(random.choice(sel))
-            return input
+            selalt = list(range(9, 12))
+            self.distr.blanceImages(sel, selected)
+            self.distr.balanceCategories(sel, selalt, selected)
+            self.distr.balanceArms(sel, selected, selalt, alt, altalt)
+            sel.extend(selalt)
+            sel.extend(alt)
+            sel.extend(altalt)
+            return sel
         else:
+            alt = list(range(3))
+            altalt = list(range(3, 6))
+            selalt = list(range(6, 9))
             sel = list(range(9, 12))
-            sel.remove(selected)
-            input.append(random.choice(sel))
-            return input
+            self.distr.blanceImages(sel, selected)
+            self.distr.balanceCategories(sel, selalt, selected)
+            self.distr.balanceArms(sel, selected, selalt, alt, altalt)
+            sel.extend(selalt)
+            sel.extend(alt)
+            sel.extend(altalt)
+            return sel
+
+
 
     def readFiles (self):
         #129 == noErrP
@@ -502,11 +525,13 @@ eeg = EEG.EEG('')
 printer = SuperPrinter.SuperPrinter()
 
 eeg.toggle_recording()
-time.sleep(10)
+time.sleep(4)
 eeg.toggle_recording()
 data = eeg.get_data()
+Filtering.Filtering.car(data)
+data = Filtering.Filtering.scale(data, 10e-4)
 printer.plot(data)
-print(Filtering.Filtering.check_quality(data[:250],250))
+print(Filtering.Filtering.check_quality(data[:500],250))
 #data = numpy.random.rand(8,250)
 #print(Filtering.Filtering.check_quality(data, 250))
 """
