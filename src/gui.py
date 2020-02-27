@@ -22,8 +22,8 @@ class Gui:
 
         # until proper color are chosen, using random ones.
         self.colors = [generate_color() for _ in range(8)]
-
-        self.confidence_label = self.win.addLabel(f'< span style = " font-size:20pt; font-weight:600;" >Prediction confidence: {0.00}< / span >', col=1, row=9)
+        text = '<span style="font-size:20pt;font-weight:600;">Prediction confidence: 0.00</span>'
+        self.confidence_label = self.win.addLabel(text, col=1, row=9)
 
     def start(self):
         timer = pg.QtCore.QTimer()
@@ -38,7 +38,8 @@ class Gui:
             containing the data. Not a clean implementation, but currently the
             best.
         """
-        self.confidence_label.setText(f'< span style = " font-size:20pt; font-weight:600;" >Prediction confidence: {data.confidence:.2f}< / span >')
+        text = f'<span style="font-size:20pt;font-weight:600;">Prediction confidence: {data.confidence:.2f}</span>'
+        self.confidence_label.setText(text)
 
         # schedule a repaint for each subplot.
         for index, curve in enumerate(self.curves):
