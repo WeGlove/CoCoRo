@@ -51,7 +51,7 @@ class Client:
 
     def __init__(self, amt_trials):
         print(self.SHAPE)
-        #self.robot = Robot.Robot.eeg_side_quickstart(self.URI)
+        self.robot = Robot.Robot.eeg_side_quickstart(self.URI)
         self.distr = Distributor()
         self.eeg = EEG.EEG(self.PATH)
         self.net = Net.Net(self.SHAPE)
@@ -98,16 +98,16 @@ class Client:
 
                 time.sleep(1)
 
-                actual_image = random.choice(self.createDistribution(image, self.P))  # Get actually shown image
+                actual_image = random.choice(self.createDistribution(image))  # Get actually shown image
                 self.eeg.toggle_recording()
-                trial_begin = time.time()
                 time.sleep(0.5)
+                trial_begin = time.time()
                 self.robot.publish("moveArm", moveArm(0 if actual_image < 6 else 1))
                 self.eeg.set_event(Events.MOVEARMLEFT.value if actual_image < 6 else Events.MOVEARMRIGHT.value)
                 moved_event = self.robot.wait_for_events()[0]
                 if not isinstance(event, moved):
                     print("something is wrong!")
-                time.sleep(1.2 + 0 - (time.time() - trial_begin)) #TODO
+                time.sleep(1.5 - (time.time() - trial_begin))
                 self.eeg.toggle_recording()
                 Plot.data = self.eeg.get_data().copy()
                 print(Filtering.Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
@@ -131,6 +131,7 @@ class Client:
 
                 self.eeg.toggle_recording()
                 time.sleep(0.5)
+                trial_begin = time.time()
                 self.robot.publish("moveCategory", moveCategory(0 if actual_image < 3 else
                                                 (1 if actual_image < 6 else
                                                  (2 if actual_image < 9 else 3))))
@@ -138,7 +139,7 @@ class Client:
                 moved_event = self.robot.wait_for_events()[0]
                 if not isinstance(event, shown):
                     print("something is wrong!")
-                time.sleep(0.7)
+                time.sleep(1.5 + 0 - (time.time() - trial_begin))
                 self.eeg.toggle_recording()
                 Plot.data = self.eeg.get_data().copy()
                 print(Filtering.Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
@@ -162,6 +163,7 @@ class Client:
 
                 self.eeg.toggle_recording()
                 time.sleep(0.5)
+                trial_begin = time.time()
                 self.robot.publish("moveImg", moveImg(actual_image))
                 self.eeg.set_event(
                     Events.MOVEIMAGEONE.value if actual_image % 3 == 0 else
@@ -169,7 +171,7 @@ class Client:
                 moved_event = self.robot.wait_for_events()[0]
                 if not isinstance(event, moved):
                     print("something is wrong!")
-                time.sleep(0.7)
+                time.sleep(1.5 + 0 - (time.time() - trial_begin))
                 self.eeg.toggle_recording()
                 Plot.data = self.eeg.get_data().copy()
                 print(Filtering.Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
@@ -286,6 +288,11 @@ class Client:
         labels = [0 if label == "ErrP" else 1 for label in labels]
         labels = to_categorical(labels)
         data = numpy.empty((len(recordings),8, 655), dtype=int)
+        max = 0
+        for i in recordings:
+            if len(i[0]) > max:
+                max = len(i[0])
+        print ("The maximum is: " + str( max))
         for i in recordings:
             dump = []
             for k in range (8):
@@ -400,19 +407,20 @@ class Client:
         print("Errors: " + str(errorCount) + "with total of: " + str(total) + "with Events" + str(errorlist)+ ", " + str(errorfilelist))
 
 
-from scipy import signal
+#from scipy import signal
 
-BANDWITH = 2
-sfreq = 250
+#BANDWITH = 2
+#sfreq = 250
 
-device = EEG.EEG("Recordings/")
-no = 203
-device.read_from_file(f"{no}.npy", f"{no}.json")
-data = device.get_data()[:,250:]
+#device = EEG.EEG("Recordings/")
+#no = 203
+#device.read_from_file(f"{no}.npy", f"{no}.json")
+#data = device.get_data()[:,250:]
 
-EEG.SuperPrinter.SuperPrinter().plot(Filtering.Filtering.bandpass(data))
+#EEG.SuperPrinter.SuperPrinter().plot(Filtering.Filtering.bandpass(data))
 
-#client = Client(0)
+client = Client(0)
+client.train()
 #client.readFiles()
 #client.train_net()
 
@@ -500,16 +508,16 @@ def automatic(robot):
         robot.publish("reset", reset())
         robot.wait_for_events()
 
-"""
-robot = Robot.Robot.eeg_side_quickstart("tecs://192.168.1.132:9000/ps")
 
-while True:
-    text = input("Next Command")
-    if text == "auto":
-        automatic(robot)
-    elif text == "pick":
-        cont_test(robot)
-"""
+#robot = Robot.Robot.eeg_side_quickstart("tecs://192.168.1.132:9000/ps")
+
+#while True:
+#    text = input("Next Command")
+#    if text == "auto":
+#        automatic(robot)
+#    elif text == "pick":
+#        cont_test(robot)
+
 
 
 

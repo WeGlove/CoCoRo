@@ -6,11 +6,11 @@ class Distributor:
     PCATWRONG = (1/3)
     PARMRIGHT = 0.75
     PARMWRONG = 0.25
-    def __init__(self, arr1, arr2, arr3,arr4):
-        self.array1 = arr1
-        self.array2 = arr2
-        self.array3 = arr3
-        self.array4= arr4
+    def __init__(self):
+        self.array1 = list(range(3))
+        self.array2 = list(range(3,6))
+        self.array3 = list(range(6,9))
+        self.array4= list(range(9,12))
 
     def blanceImages(self, arr, choice):
         amtChoice = 0
@@ -116,7 +116,7 @@ class Distributor:
 
 
 
-
+"""
 distr = Distributor()
 distr.blanceImages(distr.array1,1)
 distr.balanceCategories(distr.array1, distr.array2,1)
@@ -150,3 +150,4 @@ acc = [val / len(chosenside) for val in acc]
 for i in range(len(acc)):
     print(f"{i}: Accumulation: {acc[i]:.3f}")
 
+"""
