@@ -1,10 +1,10 @@
-import numpy as np
 import threading
 
 import data
 from utils import threaded
 from gui import Gui
 from hal_eeg import Hal_eeg  # hardware abstraction layer for the eeg headset
+
 
 # test client for debugging
 # TODO: remove as soon as actual client class is ported.
@@ -18,6 +18,7 @@ class Client:
             x = input('Input:\t')
             data.confidence = float(x)
 
+
 def main():
     # start all modules separately, i.e. the client, the eeg device,...
     eeg_handle = Hal_eeg().run()
@@ -30,6 +31,7 @@ def main():
     client_handle.do_run = False
     eeg_handle.join()
     client_handle.join()
+
 
 if __name__ == '__main__':
     main()

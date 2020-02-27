@@ -5,6 +5,7 @@ import numpy as np
 from utils import threaded
 import data
 
+
 class Hal_eeg:
     """ Hardware abstraction layer for the EEG headset.
         Basically just simulates the incoming eeg signals for all

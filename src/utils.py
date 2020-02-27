@@ -2,6 +2,7 @@ import threading
 import random
 import colorsys
 
+
 def threaded(fn):
     """ Decorator for the thread run method.
         Used to get a handle of the thread for joining the thread after
@@ -12,6 +13,7 @@ def threaded(fn):
         thread.start()
         return thread
     return wrapper
+
 
 def generate_color():
     """ Generates bright colors and avoids black.
