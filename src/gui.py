@@ -1,21 +1,14 @@
-import data
-from utils import generate_color
-
-import time
-import random
-import colorsys
-
-import numpy as np
-
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
+
+import data
+from utils import generate_color
 
 
 class Gui:
     """ Main GUI window class. Defines the window and initializes the graphs
         for the data from each electrode coming from the EEG headset.
     """
-
     def __init__(self):
         self.win = pg.GraphicsWindow(size=(1500, 1000))
         self.win.setWindowTitle('EEG signals')
