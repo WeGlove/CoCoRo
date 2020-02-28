@@ -40,7 +40,7 @@ class Client:
     BREAKTIME = 1.5
     URI = "tecs://192.168.1.132:9000/ps"  # URI of the TECS server
     SHAPE = (8,655,1)  # (Numpy) shape for the input for the net
-    PATH = ".\Ressources\Recordings\\"  # Filepath and name to the keras model
+    PATH = ".\Ressources\Recordings sec\\"  # Filepath and name to the keras model
     print(PATH)
     PATH_CNN = PATH + "cnn_model.h5" # PATH to the CNN
     NO_IMAGES = 12  # Number of images in the trials
@@ -385,7 +385,7 @@ class Client:
         total = 0
         for i in range(6):
             addendum = "Recordings"+str(i)+"\\"
-            curdir = os.listdir(".\Ressources\Recordings\\"+addendum)
+            curdir = os.listdir("Ressources\\Recordings sec\\"+addendum)
             lendir = len(curdir)
             j = 0
             while (j < lendir):
@@ -426,7 +426,7 @@ class Client:
 #EEG.SuperPrinter.SuperPrinter().plot(Filtering.Filtering.bandpass(data))
 
 client = Client(0)
-client.train()
+client.readFiles()
 #client.readFiles()
 #client.train_net()
 
