@@ -11,6 +11,7 @@ pyqtgraph = "*"
 pyqt5 = "*"
 keras = "*"
 tensorflow = "*"
+thrift = "*"
 
 [dev-packages]
 pylint = "*"

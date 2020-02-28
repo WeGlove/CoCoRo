@@ -2,3 +2,9 @@
 .vscode
 src/__pycache__
 
+src/yee/__pycache__/
+src/yee/de/__pycache__/
+src/yee/de/dfki/__pycache__/
+src/yee/de/dfki/tecs/__pycache__/
+src/yee/de/dfki/tecs/robot/__pycache__/
+src/yee/de/dfki/tecs/robot/baxter/__pycache__/
