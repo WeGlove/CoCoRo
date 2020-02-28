@@ -107,10 +107,12 @@ class Client:
                 moved_event = self.robot.wait_for_events()[0]
                 if not isinstance(event, moved):
                     print("something is wrong!")
-                time.sleep(1.5 - (time.time() - trial_begin))
+                t = 2 - (time.time() - trial_begin)
+                if t>0:
+                    time.sleep(t)
                 self.eeg.toggle_recording()
                 Plot.data = self.eeg.get_data().copy()
-                print(Filtering.Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
+                #print(Filtering.Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
                 if not moved_event.success:
                     raise Exception("Error")
                 if (image < 6 and actual_image >= 6) or (image >= 6 and actual_image < 6):
@@ -139,10 +141,12 @@ class Client:
                 moved_event = self.robot.wait_for_events()[0]
                 if not isinstance(event, shown):
                     print("something is wrong!")
-                time.sleep(1.5 + 0 - (time.time() - trial_begin))
+                t = 2 - (time.time() - trial_begin)
+                if t > 0:
+                    time.sleep(t)
                 self.eeg.toggle_recording()
                 Plot.data = self.eeg.get_data().copy()
-                print(Filtering.Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
+                #print(Filtering.Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
                 if not moved_event.success:
                     raise Exception("Error")
                 if (image % 6 < 3 and actual_image % 6 >= 3) or (image % 6 >= 3 and actual_image % 6 < 3):
@@ -171,10 +175,12 @@ class Client:
                 moved_event = self.robot.wait_for_events()[0]
                 if not isinstance(event, moved):
                     print("something is wrong!")
-                time.sleep(1.5 + 0 - (time.time() - trial_begin))
+                t = 2 - (time.time() - trial_begin)
+                if t > 0:
+                    time.sleep(t)
                 self.eeg.toggle_recording()
                 Plot.data = self.eeg.get_data().copy()
-                print(Filtering.Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
+                #print(Filtering.Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
                 if image != actual_image:
                     self.labels.append("ErrP")
                     self.eeg.set_event(Events.ERRP.value)
@@ -509,14 +515,15 @@ def automatic(robot):
         robot.wait_for_events()
 
 
-#robot = Robot.Robot.eeg_side_quickstart("tecs://192.168.1.132:9000/ps")
+def robot_test():
+    robot = Robot.Robot.eeg_side_quickstart("tecs://192.168.1.132:9000/ps")
 
-#while True:
-#    text = input("Next Command")
-#    if text == "auto":
-#        automatic(robot)
-#    elif text == "pick":
-#        cont_test(robot)
+    while True:
+        text = input("Next Command")
+        if text == "auto":
+            automatic(robot)
+        elif text == "pick":
+            cont_test(robot)
 
 
 
