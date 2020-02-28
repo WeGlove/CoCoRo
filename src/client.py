@@ -104,7 +104,7 @@ class Client:
                     print("something is wrong!")
                 time.sleep(1.2 + 0 - (time.time() - trial_begin)) #TODO
                 self.eeg.toggle_recording()
-                print(Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
+                print(Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))  # unneccessary copy
                 if not moved_event.success:
                     raise Exception("Error")
                 if (image < 6 and actual_image >= 6) or (image >= 6 and actual_image < 6):
@@ -134,7 +134,7 @@ class Client:
                     print("something is wrong!")
                 time.sleep(0.7)
                 self.eeg.toggle_recording()
-                print(Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
+                print(Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))  # unneccessary copy
                 if not moved_event.success:
                     raise Exception("Error")
                 if (image % 6 < 3 and actual_image % 6 >= 3) or (image % 6 >= 3 and actual_image % 6 < 3):
@@ -164,7 +164,7 @@ class Client:
                     print("something is wrong!")
                 time.sleep(0.7)
                 self.eeg.toggle_recording()
-                print(Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
+                print(Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))  # unneccessary copy
                 if image != actual_image:
                     self.labels.append("ErrP")
                     self.eeg.set_event(Events.ERRP.value)
