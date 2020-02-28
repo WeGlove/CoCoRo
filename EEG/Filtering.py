@@ -79,6 +79,13 @@ class Filtering:
         #new_data = [signal.lfilter(b, a, row)for row in data]
         return new_data
 
+    @staticmethod
+    def car(data):
+        acc = numpy.average(data, axis=0)
+        print(f"Acc:{acc}")
+        return numpy.array([row - acc for row in data])
+
+
 
 
 
