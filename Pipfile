@@ -12,6 +12,7 @@ pyqt5 = "*"
 keras = "*"
 tensorflow = "*"
 thrift = "*"
+uritools = "*"
 
 [dev-packages]
 pylint = "*"

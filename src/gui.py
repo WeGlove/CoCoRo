@@ -44,6 +44,13 @@ class Gui:
         # schedule a repaint for each subplot.
         for index, curve in enumerate(self.curves):
             pen = pg.mkPen(self.colors[index], style=QtCore.Qt.SolidLine)
-            curve.setData(data.eeg_matrix[index][-1250:], pen=pen)  # get the last 1250 elements
+            # get the last 1250 elements
+            try:
+                curve.setData(data.eeg_matrix[index][-1250:], pen=pen)
+            except Exception:
+                # out of bound exception. We can just ignore it and wait until
+                # the buffer has enough elements in it.
+                pass
         # apply the render events.
         pg.QtGui.QApplication.processEvents()  # not sure if necessary or useful?!
+

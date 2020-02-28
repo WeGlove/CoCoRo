@@ -4,7 +4,7 @@ import data
 from utils import threaded
 from gui import Gui
 from hal_eeg import Hal_eeg  # hardware abstraction layer for the eeg headset
-from client import Client
+# from client import Client
 
 
 # test client for debugging
@@ -19,13 +19,13 @@ class Clt:
             x = input('Input:\t')
             data.confidence = float(x)
 
-
+"""
 class Client_thread:
     @threaded
     def run(self):
         client = Client(amt_trials=0)
         client.train()
-
+"""
 
 def main():
     # start all modules separately, i.e. the client, the eeg device,...
