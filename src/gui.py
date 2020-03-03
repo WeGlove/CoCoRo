@@ -3,6 +3,7 @@ from pyqtgraph.Qt import QtCore, QtGui
 
 import data
 from utils import generate_color
+from filtering import Filtering
 
 
 class Gui:
@@ -46,7 +47,7 @@ class Gui:
             pen = pg.mkPen(self.colors[index], style=QtCore.Qt.SolidLine)
             # get the last 1250 elements
             try:
-                curve.setData(data.eeg_matrix[index][-1250:], pen=pen)
+                curve.setData(Filtering.bandpass(data.eeg_matrix[index][-1250:]), pen=pen)
             except Exception:
                 # out of bound exception. We can just ignore it and wait until
                 # the buffer has enough elements in it.

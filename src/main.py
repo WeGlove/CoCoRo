@@ -3,8 +3,9 @@ import threading
 import data
 from utils import threaded
 from gui import Gui
+import eeg
 from hal_eeg import Hal_eeg  # hardware abstraction layer for the eeg headset
-# from client import Client
+from client import Client
 
 
 # test client for debugging
@@ -19,28 +20,34 @@ class Clt:
             x = input('Input:\t')
             data.confidence = float(x)
 
-"""
+
 class Client_thread:
     @threaded
     def run(self):
         client = Client(amt_trials=0)
         client.train()
-"""
+
 
 def main():
     # start all modules separately, i.e. the client, the eeg device,...
-    eeg_handle = Hal_eeg().run()
-    client_handle = Clt().run()
+    #eeg_handle = Hal_eeg().run()
+    #client_handle = Clt().run()
     # start actual client.
-    # clt = Client_thread().run()
+    clt = Client_thread().run()
+
+    #device = eeg.Eeg("")
+    #device.toggle_recording()
 
     # start the Gui in the main thread and wait until we close it.
     Gui().start()
     # as soon as the gui window gets closed, we close all the remaining threads.
-    eeg_handle.do_run = False
+    #eeg_handle.do_run = False
     client_handle.do_run = False
-    eeg_handle.join()
+    #eeg_handle.join()
     client_handle.join()
+
+    #device.toggle_recording()
+    print("Hey")
 
 
 if __name__ == '__main__':

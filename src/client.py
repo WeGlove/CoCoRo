@@ -1,18 +1,17 @@
-import Robot
-import Net
+import robot
+import net
 import time
 import random
 from yee.de.dfki.tecs.robot.baxter.ttypes import *
-from EEG import EEG
-from EEG import Filtering
+import eeg
+from filtering import Filtering
 from enum import Enum
 from Distributor import Distributor
 import os
 import json
 import numpy
-import Classifier
+import classifier
 from keras.utils import to_categorical
-from EEG import Plot
 
 class Events(Enum):
     DEFAULT =           0b0000000
@@ -51,10 +50,10 @@ class Client:
 
     def __init__(self, amt_trials):
         print(self.SHAPE)
-        self.robot = Robot.Robot.eeg_side_quickstart(self.URI)
+        self.robot = robot.Robot.eeg_side_quickstart(self.URI)
         self.distr = Distributor()
-        self.eeg = EEG.EEG(self.PATH)
-        self.net = Net.Net(self.SHAPE)
+        self.eeg = eeg.Eeg(self.PATH)
+        self.net = net.Net(self.SHAPE)
         self.labels = []
         self.datalist = []
         self.eventlist = []
@@ -73,6 +72,7 @@ class Client:
         print("Started Training")
 
         index = 0
+        self.eeg.toggle_recording()
         for l in range(6):
             begin = time.time()
             print(f"Starting section{l}")
@@ -99,7 +99,6 @@ class Client:
                 time.sleep(1)
 
                 actual_image = random.choice(self.createDistribution(image))  # Get actually shown image
-                self.eeg.toggle_recording()
                 time.sleep(0.5)
                 trial_begin = time.time()
                 self.robot.publish("moveArm", moveArm(0 if actual_image < 6 else 1))
@@ -110,8 +109,6 @@ class Client:
                 t = 2 - (time.time() - trial_begin)
                 if t>0:
                     time.sleep(t)
-                self.eeg.toggle_recording()
-                Plot.data = self.eeg.get_data().copy()
                 #print(Filtering.Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
                 if not moved_event.success:
                     raise Exception("Error")
@@ -119,8 +116,8 @@ class Client:
                     self.eeg.set_event(Events.ERRP.value)
                 else:
                     self.eeg.set_event(Events.NOERRP.value)
-                self.eeg.write_to_file(str(index*10+1), str(index*10+1))
-                self.eeg.clear()
+                #self.eeg.write_to_file(str(index*10+1), str(index*10+1))
+                #self.eeg.clear()
                 if (image < 6 and actual_image >= 6) or (image >= 6 and actual_image < 6):
                     self.labels.append("ErrP")
                     self.robot.publish("reset", reset())
@@ -131,7 +128,6 @@ class Client:
                 else:
                     self.labels.append("noErrP")
 
-                self.eeg.toggle_recording()
                 time.sleep(0.5)
                 trial_begin = time.time()
                 self.robot.publish("moveCategory", moveCategory(0 if actual_image < 3 else
@@ -144,8 +140,6 @@ class Client:
                 t = 2 - (time.time() - trial_begin)
                 if t > 0:
                     time.sleep(t)
-                self.eeg.toggle_recording()
-                Plot.data = self.eeg.get_data().copy()
                 #print(Filtering.Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
                 if not moved_event.success:
                     raise Exception("Error")
@@ -153,8 +147,8 @@ class Client:
                     self.eeg.set_event(Events.ERRP.value)
                 else:
                     self.eeg.set_event(Events.NOERRP.value)
-                self.eeg.write_to_file(str(index*10+2), str(index*10+2))
-                self.eeg.clear()
+                #self.eeg.write_to_file(str(index*10+2), str(index*10+2))
+                #self.eeg.clear()
                 if (image % 6 < 3 and actual_image % 6 >= 3) or (image % 6 >= 3 and actual_image % 6 < 3):
                     self.labels.append("ErrP")
                     self.robot.publish("reset", reset())
@@ -165,7 +159,6 @@ class Client:
                 else:
                     self.labels.append("noErrP")
 
-                self.eeg.toggle_recording()
                 time.sleep(0.5)
                 trial_begin = time.time()
                 self.robot.publish("moveImg", moveImg(actual_image))
@@ -178,8 +171,6 @@ class Client:
                 t = 2 - (time.time() - trial_begin)
                 if t > 0:
                     time.sleep(t)
-                self.eeg.toggle_recording()
-                Plot.data = self.eeg.get_data().copy()
                 #print(Filtering.Filtering.check_quality(self.eeg.get_data().copy(), self.SFREQ))
                 if image != actual_image:
                     self.labels.append("ErrP")
@@ -190,8 +181,8 @@ class Client:
                 if not moved_event.success:
                     raise Exception("Error")
                 # ELSE reset to original position and restart whole trial as success
-                self.eeg.write_to_file(str(index*10+3), str(index*10+3))
-                self.eeg.clear()
+                #self.eeg.write_to_file(str(index*10+3), str(index*10+3))
+                #self.eeg.clear()
                 self.robot.publish("reset", reset())
                 moved_event = self.robot.wait_for_events()[0]
                 if not isinstance(event, shown):
@@ -205,6 +196,7 @@ class Client:
             time.sleep(30)
             print("Continuing")
 
+        self.eeg.toggle_recording()
         with open(self.PATH + "LABELS.json", "w+") as f:
             json.dump(f, self.labels)
 
@@ -249,7 +241,8 @@ class Client:
                 moved_event = event.parse(moved())
                 continue
             else:
-                self.eeg.clear()
+                #self.eeg.clear()
+                pass
 
             self.robot.publish("moveCategory", moveCategory(0 if classification < 3 else
                                             (1 if classification < 6 else
@@ -267,7 +260,8 @@ class Client:
                 moved_event = event.parse(moved())
                 continue
             else:
-                self.eeg.clear()
+                #self.eeg.clear()
+                pass
 
             self.robot.publish("moveImg", moveImg(classification % 3))
             self.eeg.toggle_recording()
@@ -425,8 +419,8 @@ class Client:
 
 #EEG.SuperPrinter.SuperPrinter().plot(Filtering.Filtering.bandpass(data))
 
-client = Client(0)
-client.readFiles()
+#client = Client(0)
+#client.readFiles()
 #client.readFiles()
 #client.train_net()
 

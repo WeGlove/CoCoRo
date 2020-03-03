@@ -72,8 +72,9 @@ class Filtering:
 
     @staticmethod
     def bandpass(data, sfreq=250):
-        print(len(data[0]))
         new_data = mne.filter.filter_data(data, sfreq, 5, 40)
+        #print(type(new_data))
+        #print(new_data.shape)
 
         #b,a = signal.butter(3,[5/(sfreq/2),40/(sfreq/2)], btype="band")
         #new_data = [signal.lfilter(b, a, row)for row in data]
