@@ -1,13 +1,15 @@
-from scipy import signal, fftpack
 import statistics
+from scipy import signal, fftpack
 import numpy
 import mne
 
 class Filtering:
+
     BAD = 0
     POOR = 1
     GOOD = 2
-    BANDWIDTH = 2
+
+    BANDWITH = 2
 
     @staticmethod
     def check_quality(data, sfreq):
@@ -21,6 +23,7 @@ class Filtering:
         return [Filtering.GOOD if std_checks[i] and bpmd_checks[i] else
                 (Filtering.POOR if std_checks[i] or bpmd_checks[i] else Filtering.BAD)
                 for i in range(len(data))]
+
 
     @staticmethod
     def check_std(data):
@@ -40,8 +43,8 @@ class Filtering:
         """
 
         # Apply Notch filters
-        fif_num, fif_dem = signal.iirnotch(50, 50/Filtering.BANDWIDTH, fs=sfreq)
-        six_num, six_dem = signal.iirnotch(60, 60/Filtering.BANDWIDTH, fs=sfreq)
+        fif_num, fif_dem = signal.iirnotch(50, 50/Filtering.BANDWITH, fs=sfreq)
+        six_num, six_dem = signal.iirnotch(60, 60/Filtering.BANDWITH, fs=sfreq)
         notch_data = [signal.lfilter(six_num, six_dem,signal.lfilter(fif_num, fif_dem, row)) for row in data]
         notch_freqs = [fftpack.rfft(row) for row in notch_data]
         notch_mean = [sum(row[51 - 2:51 + 2]) / len(row[51 - 2:51 + 2]) +
@@ -64,7 +67,7 @@ class Filtering:
 
     @staticmethod
     def notch(data, freq=50,sfreq=250):
-        fif_num, fif_dem = signal.iirnotch(50, 50 / Filtering.BANDWIDTH, fs=sfreq)
+        fif_num, fif_dem = signal.iirnotch(50, 50 / Filtering.BANDWITH, fs=sfreq)
         return numpy.array([signal.lfilter(fif_num, fif_dem, row) for row in data])
 
     @staticmethod
@@ -75,3 +78,14 @@ class Filtering:
         #b,a = signal.butter(3,[5/(sfreq/2),40/(sfreq/2)], btype="band")
         #new_data = [signal.lfilter(b, a, row)for row in data]
         return new_data
+
+    @staticmethod
+    def car(data):
+        acc = numpy.average(data, axis=0)
+        print(f"Acc:{acc}")
+        return numpy.array([row - acc for row in data])
+
+
+
+
+

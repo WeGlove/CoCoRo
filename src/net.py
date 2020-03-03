@@ -40,7 +40,7 @@ class Net:
     def fit(self, data, labels, epochs, batch_size=32, validation= None):
         """
         for model training, literally just calls keras.fit with our parameters on our model.
-        :param batch_size: the amount of data and labels to be expected
+        :param batch_size: the amount of data and labels taken during one epoch
         :param data: training data
         :param labels: for each i in training data: label[i] = label(data[i])
         :param epochs: how long to train the model for
