@@ -407,47 +407,6 @@ class Client:
         print("Errors: " + str(errorCount) + "with total of: " + str(total) + "with Events" + str(errorlist)+ ", " + str(errorfilelist))
 
 
-#from scipy import signal
-
-#BANDWITH = 2
-#sfreq = 250
-
-#device = EEG.EEG("Recordings/")
-#no = 203
-#device.read_from_file(f"{no}.npy", f"{no}.json")
-#data = device.get_data()[:,250:]
-
-#EEG.SuperPrinter.SuperPrinter().plot(Filtering.Filtering.bandpass(data))
-
-#client = Client(0)
-#client.readFiles()
-#client.readFiles()
-#client.train_net()
-
-#client.train()
-#print("Done Recording")
-#input()
-
-
-"""
-gui = Plot.GUI_thread()
-gui.run()
-while True:
-    Plot.data = numpy.random.rand(8, 1250)
-    Plot.confidence = 0.3
-
-print("Hey")
-input()
-client = Client(0)
-client.train()
-"""
-# "tecs://172.31.1.132:9000/ps"
-
-"""
-robot = Robot.Robot.robot_side_quickstart()
-while True:
-    print(robot.wait_for_events())
-"""
 
 def cont_test(robot):
     time.sleep(1)
@@ -518,33 +477,4 @@ def robot_test():
             automatic(rob)
         elif text == "pick":
             cont_test(rob)
-
-
-
-
-
-
-
-"""
-from EEG import EEG
-from EEG import SuperPrinter
-from EEG import Filtering
-import time
-import numpy
-eeg = EEG.EEG('')
-printer = SuperPrinter.SuperPrinter()
-
-eeg.toggle_recording()
-time.sleep(4)
-eeg.toggle_recording()
-data = eeg.get_data()
-Filtering.Filtering.car(data)
-data = Filtering.Filtering.scale(data, 10e-4)
-printer.plot(data)
-print(Filtering.Filtering.check_quality(data[:500],250))
-#data = numpy.random.rand(8,250)
-#print(Filtering.Filtering.check_quality(data, 250))
-"""
-
-
 
