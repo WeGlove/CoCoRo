@@ -8,4 +8,4 @@ eeg_matrix = np.zeros((8, 1250))
 eeg_events = []
 
 # The confidence of our prediction.
-confidence = 0.42
+confidence = 0

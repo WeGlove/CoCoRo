@@ -2,6 +2,7 @@ import statistics
 from scipy import signal, fftpack
 import numpy
 import mne
+mne.set_log_level(False)
 
 class Filtering:
 

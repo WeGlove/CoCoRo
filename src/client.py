@@ -510,14 +510,15 @@ def automatic(robot):
 
 
 def robot_test():
-    robot = Robot.Robot.eeg_side_quickstart("tecs://192.168.1.132:9000/ps")
+    rob = robot.Robot.eeg_side_quickstart("tecs://192.168.1.132:9000/ps")
 
     while True:
         text = input("Next Command")
         if text == "auto":
-            automatic(robot)
+            automatic(rob)
         elif text == "pick":
-            cont_test(robot)
+            cont_test(rob)
+
 
 
 

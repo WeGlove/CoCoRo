@@ -33,7 +33,7 @@ def main():
     #eeg_handle = Hal_eeg().run()
     #client_handle = Clt().run()
     # start actual client.
-    clt = Client_thread().run()
+    client_handle = Client_thread().run()
 
     #device = eeg.Eeg("")
     #device.toggle_recording()
